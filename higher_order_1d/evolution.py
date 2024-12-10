@@ -181,6 +181,7 @@ def evolve(U, t_final, dx, nx, gamma=1.4, cfl=0.5, theta=1.5):
     t = 0.
     # Apply boundary conditions
     U = apply_boundary_conditions(U)
+
     while t < t_final:
         dt = compute_time_step(U, dx, cfl, gamma)
         if t + dt > t_final:

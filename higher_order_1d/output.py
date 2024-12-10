@@ -37,3 +37,6 @@ def plot_data(U, x, gamma=1.4):
 
     plt.tight_layout()
     plt.show()
+
+def save_data():
+    pass

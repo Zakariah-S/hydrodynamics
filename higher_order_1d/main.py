@@ -1,6 +1,7 @@
-from initialization import *
-from evolution import *
-from output import *
+from initialization import initialize
+from evolution import evolve
+from output import plot_data
+import numpy as np
 
 # Initialize independent and dependent variables
 nx = 400
@@ -31,11 +32,9 @@ P[2:-2][x_physical > 0.5] = P_R
 v[2:-2][x_physical <= 0.5] = v_L
 v[2:-2][x_physical > 0.5] = v_R
 
-#Start and end times
-t = 0.0
-t_final = 0.25
-
 #Simulation and plotting
-U = initialize(rho, v, P, t_final, gamma=1.4, theta=1.5)
+t_final = 0.10
+
+U = initialize(rho, v, P, dx, t_final, gamma=1.4, theta=1.5)
 U = evolve(U, t_final, dx, nx)
 plot_data(U, x)
