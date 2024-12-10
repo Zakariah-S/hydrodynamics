@@ -38,7 +38,6 @@ def sod_shock():
     U, step_size, steps = initialize(rho, v, P, dx, t_final)
     U = evolve(U, step_size, t_final, dx, nx)
     t = step_size * np.arange(steps + 1)
-    # # plot_from_one_U(U[-1], x)
     save_data("sodshock", U, x, t)
 # sod_shock()
 
