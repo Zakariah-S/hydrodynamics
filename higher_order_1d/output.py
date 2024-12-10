@@ -42,22 +42,19 @@ def plot_one_time(x, rho, v, p, t=None):
     plt.figure(figsize=(12, 8))
 
     plt.subplot(3, 1, 1)
-    plt.plot(x, rho, label='Density')
+    plt.plot(x, rho)
     if t: plt.title(f'Sod Shock Tube Results at Time {np.round(t, 2)} s')
     else: plt.title('Sod Shock Tube Results')
     plt.ylabel('Density')
-    plt.legend()
 
     plt.subplot(3, 1, 2)
-    plt.plot(x, v, label='Velocity', color='green')
+    plt.plot(x, v, color='green')
     plt.ylabel('Velocity')
-    plt.legend()
 
     plt.subplot(3, 1, 3)
-    plt.plot(x, p, label='Pressure', color='red')
+    plt.plot(x, p, color='red')
     plt.xlabel('Position x')
     plt.ylabel('Pressure')
-    plt.legend()
 
     plt.tight_layout()
     plt.show()
