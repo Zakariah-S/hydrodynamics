@@ -9,7 +9,7 @@ def minmod(a, b, c):
     sgn_b = np.sign(b)
     sgn_c = np.sign(c)
     min_abs = np.min([np.abs(a), np.abs(b), np.abs(c)])
-    result = 0.25 * (sgn_a + sgn_b) * (sgn_a + sgn_c) * min_abs
+    result = 0.25 * np.abs(sgn_a + sgn_b) * (sgn_a + sgn_c) * min_abs
     return result
 
 def reconstruct(c, theta):

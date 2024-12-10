@@ -17,12 +17,12 @@ def reverse_sod_shock():
     P = np.zeros(nx + 4)
 
     # Set up initial conditions for Sod shock tube
-    rho_R = 10.0
-    rho_L = 1.0
-    P_R = 8.0
-    P_L = 1.0
-    v_R = 0.0
+    rho_L = 10.0
+    rho_R = 1.0
+    P_L = 8.0
+    P_R = 1.0
     v_L = 0.0
+    v_R = 0.0
 
     # Set up rho, v, and P in the container, excluding the "ghost cells" on the edges
     x_physical = x[2:-2]
@@ -35,20 +35,21 @@ def reverse_sod_shock():
     #Simulation and plotting
     t_final = 0.25
 
-    U, step_size, steps = initialize(rho, v, P, dx, t_final)
+    U, step_size, steps = initialize(rho[::-1], v[::-1], P[::-1], dx, t_final)
     U = evolve(U, step_size, t_final, dx, nx)
     t = step_size * np.arange(steps + 1)
     # # plot_from_one_U(U[-1], x)
     save_data("reversed_sodshock", U, x, t)
-# reverse_sod_shock()
+reverse_sod_shock()
 
 t, x, rho, v, p = load_data("sodshock.npz")
 tr, xr, rhor, vr, pr = load_data("reversed_sodshock.npz")
 # plot_one_time(x, rho[-1], v[-1], p[-1], t[-1])
 
-print(np.argwhere(rho[1] != rhor[1,::-1]))
-print(np.argwhere(v[1] != vr[1, ::-1]))
-print(np.argwhere(p[1] != pr[1, ::-1]))
+indices = np.argwhere(rho[1] != rhor[1, ::-1])
+print(indices)
+# print(np.argwhere(v[1] != vr[1, ::-1]))
+# print(np.argwhere(p[1] != pr[1, ::-1]))
 
 #Compare the original with the reversed
-# animate(t, x, rho - rhor[:, ::-1], np.abs(v) - np.abs(vr[:, ::-1]), p - pr[:, ::-1])
+animate(t, x, rho - rhor[:, ::-1], np.abs(v) - np.abs(vr[:, ::-1]), p - pr[:, ::-1])
