@@ -87,13 +87,30 @@ def evolve(U, F, t, dx, gamma=1.4, cfl=0.5):
     """
     start_time = time.time()
 
+    #Get time step length
+    dt = t[1] - t[0]
+
     # Apply boundary conditions
     F = apply_boundary_conditions(F)
 
+    #Factor out dimensions
+    #Get the normalization constants corresponding to each U_i
+    n0 = np.mean(U[0, 2:-2, 0])
+    n1 = n0 * dx / dt
+    n2 = n0 * np.square(dx / dt)
+    norms = np.array([n0, n1, n2])
+
+    #Divide out the constants
+    U /= norms
+
+    #Divide out appropriate normalizations from F
+    F_norms = np.array([n1, n2, n2 * dx/dt])
+    F /= F_norms
+
     for i in range(1, t.size):
-        U[i], F = step(U[i-1], F, t[i] - t[i-1], dx, gamma=gamma, cfl=cfl)
+        U[i], F = step(U[i-1], F, dt=1., dx=1., gamma=gamma, cfl=cfl)
         print(f"t = {t[i]:.4f} s")
 
     end_time = time.time()
     print(f"Simulation completed in {end_time - start_time:.2f} seconds.")
-    return U
+    return U * norms

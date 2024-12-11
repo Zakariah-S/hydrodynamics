@@ -168,7 +168,16 @@ def residuals_animation(infile1, infile2, title='Sod Shock Simulation Residuals'
         pres2.set_data(x, p2[frame])
         pres_resid.set_data(x, p1[frame] - p2[frame])
         time_text.set_text(f't = {np.round(t[frame], 2):.2f} s')
+
         return dens1, dens2, dens_resid, vel1, vel2, vel_resid, pres1, pres2, pres_resid, time_text
 
     ani = mani.FuncAnimation(fig=fig, func=update, frames=range(1, t.size), interval=50)
     plt.show()
+
+def compare_files(compare_file, test_file, eps=1e-10):
+    #Check if data files are the same with a very small margin of error
+    t, x, rho, v, p = load_data(compare_file)
+    tt, xt, rhot, vt, pt = load_data(test_file)
+    print(np.all(np.abs(rho - rhot) < eps))
+    print(np.all(np.abs(v - vt) < eps))
+    print(np.all(np.abs(p - pt) < eps))

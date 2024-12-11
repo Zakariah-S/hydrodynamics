@@ -176,16 +176,45 @@ def step(U, dt, dx, nx, gamma=1.4, cfl=0.5, theta=1.5):
     return U
 
 def evolve(U, t, dx, nx, gamma=1.4, cfl=0.5, theta=1.5):
+    """
+    Given the array of conserved values U[0] at the beginning of the simulation, return the array U
+    where U[i] gives the conserved values for all x at time t[i].
+
+    U: numpy.ndarray[float], size = [#time steps + 1] x [#cells] x 3
+        Array to record conserved values over the course of the simulation
+    t: numpy.ndarray[float], size = [#time steps + 1]
+        Times for which measurements will be recorded
+    dx: float
+        Distance between cell centres
+    nx: Number of recorded positions x
+    gamma: float
+        Adiabatic constant, 1.4 for our purposes
+    cfl: float
+        Courant-Friedrich-Levy constant, 0.5 for our purposes
+    theta: float
+        Constant associated with the minmod function, must be between 1 and 2 (we chose 1.5)
+    """
     start_time = time.time()
+
+    dt = t[1] - t[0]
 
     # Apply boundary conditions
     U[0] = apply_boundary_conditions(U[0])
-    t_final = t[-1]
+
+    #Factor out dimensions
+    #Get the normalization constants corresponding to each U_i
+    n0 = np.mean(U[0, 2:-2, 0])
+    n1 = n0 * dx / dt
+    n2 = n0 * np.square(dx / dt)
+    norms = np.array([n0, n1, n2])
+
+    #Divide out the constants
+    U /= norms
 
     for i in range(1, t.size):
-        U[i] = step(U[i-1], t[i] - t[i-1], dx, nx + 4)
+        U[i] = step(U[i-1], dt=1., dx=1., nx=nx + 4) #Divide out dt and dx from time step & cell length to make them dimensionless
         # print(f"t = {t[i]:.4f} s")
 
     end_time = time.time()
     print(f"Simulation completed in {end_time - start_time:.2f} seconds.")
-    return U
+    return U * norms #put the dimensions back

@@ -1,7 +1,7 @@
 import numpy as np
 from evolution import compute_time_step
 
-def initialize(x, rho, v, p, t_final, steps, gamma=1.4, cfl=0.5):
+def initialize(x, t_final, steps, rho, v, p, gamma=1.4, cfl=0.5):
     """
     - Generate the set of times t at which we will make measurements
     - Initialize an array U that will record the system's conserved values at each cell centre, for all times in t

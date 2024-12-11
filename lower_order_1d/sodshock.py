@@ -3,11 +3,8 @@ from evolution import evolve
 from output import *
 import numpy as np
 
-def sod_shock():
+def sod_shock(cells, x_start, x_end, t_final, t_steps, savename):
     # Initialize independent and dependent variables
-    cells = 800
-    x_start = 0.0
-    x_end = 1.0
     x = np.linspace(x_start, x_end, 2 * cells - 1)
     dx = x[2] - x[0]
 
@@ -15,28 +12,21 @@ def sod_shock():
     v = np.zeros_like(x)
     P = np.zeros_like(x)
 
-    # Set up initial conditions for Sod shock tube
-    rho_L = 10.0
-    rho_R = 1.0
-    P_L = 8.0
-    P_R = 1.0
-    v_L = 0.0
-    v_R = 0.0
-
     # Set up rho, v, and P in the container, excluding the "ghost cells" on the edges
-    rho[x <= 0.5] = rho_L
-    rho[x > 0.5] = rho_R
-    P[x <= 0.5] = P_L
-    P[x > 0.5] = P_R
-    v[:] = 0.
+    rho[x <= 0.5] = 10.
+    rho[x > 0.5] = 1.
+    P[x <= 0.5] = 8.
+    P[x > 0.5] = 1.
 
-    #Simulation and plotting
-    t_final = 0.40
-    steps = 40
-
-    U, F, t, x = initialize(x, rho, v, P, t_final, steps)
+    U, F, t, x = initialize(x, t_final, t_steps, rho, v, P)
     U = evolve(U, F, t, dx)
-    save_data("sodshock800", U, x, t)
-sod_shock()
+    if savename: save_data(savename, U, x, t)
 
-animate_from_file("sodshock800.npz", interval=100)
+sod_shock(cells = 200,
+          x_start = 0.,
+          x_end = 1.,
+          t_final = 0.4,
+          t_steps = 40,
+          savename="testsodshock200")
+
+compare_files('sodshock200.npz', 'testsodshock200.npz')
