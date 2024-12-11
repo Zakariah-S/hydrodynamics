@@ -2,17 +2,21 @@ import numpy as np
 import time
 
 def apply_boundary_conditions(F):
+    #Reflective boundary conditions; the flux at the outer edges (outside the bounds of our x values)
+    # is set to be the same as the innermost and outermost edge fluxes
     F[0] = F[1]
     F[-1] = F[-2]
     return F
 
 def deconstruct_U(U, gamma=1.4):
+    #Given the conserved value array U, get the corresponding densities, velocities, and pressures
     rho = U[:, 0]
     v = U[:, 1] / U[:, 0]
     p = (U[:, 2] - 0.5 * np.square(U[:, 1]) / U[:, 0]) * (gamma - 1.)
     return rho, v, p
 
 def get_F_cells(rho, v, p, gamma=1.4):
+    #Calculate the conserved-value-fluxes at cell centres, given rho, v, and p for those cells
     F = np.zeros((rho.size, 3))
     F[:, 0] = rho * v
     F[:, 1] = rho * np.square(v) + p
@@ -20,6 +24,7 @@ def get_F_cells(rho, v, p, gamma=1.4):
     return F
 
 def get_alphas(rho, v, p, gamma=1.4):
+    #Calculate alpha+ and alpha-, to be used to approximate edge fluxes and find the max time step length
     c_s = np.sqrt(gamma * p / rho)
 
     alpha_plus = np.zeros(rho.size - 1)
@@ -31,14 +36,13 @@ def get_alphas(rho, v, p, gamma=1.4):
     return alpha_plus, alpha_minus
 
 def compute_time_step(U, dx, cfl=0.5, gamma=1.4):
-    """
-    Compute time step size dt based on CFL condition.
-    """
+    #Compute time step size dt based on CFL condition.
     rho, v, p = deconstruct_U(U)
     return cfl * dx / np.max(get_alphas(rho, v, p, gamma))
 
 def step(U, F, dt, dx, gamma=1.4, cfl=0.5):
     if compute_time_step(U, dx, cfl, gamma) < dt:
+        #If the default time step is too big, take two time steps that are half its size
         U, F = step(U, F, 0.5 * dt, dx, gamma=gamma, cfl=cfl)
         U, F = step(U, F, 0.5 * dt, dx, gamma=gamma, cfl=cfl)
         return U, F
@@ -63,6 +67,24 @@ def step(U, F, dt, dx, gamma=1.4, cfl=0.5):
     return U_new, F
 
 def evolve(U, F, t, dx, gamma=1.4, cfl=0.5):
+    """
+    Given the conserved values U[0] and F at the beginning of the simulation, return the array U
+    where U[i] gives the conserved values at time t[i].
+
+    U: numpy.ndarray[float], size = [#time steps + 1] x [#cells] x 3
+        Array to record conserved values over the course of the simulation
+    F: numpy.ndarray[float], size = [#cells + 1] x 3
+        Array that holds fluxes of conserved values at the edge of each cell, also has "ghost values" 
+        at the beginning and end that are used to enforce boundary conditions
+    t: numpy.ndarray[float], size = [#time steps + 1]
+        Times for which measurements will be recorded
+    dx: float
+        Distance between cell centres
+    gamma: float
+        Adiabatic constant, 1.4 for our purposes
+    cfl: float
+        Courant-Friedrich-Levy constant, 0.5 for our purposes
+    """
     start_time = time.time()
 
     # Apply boundary conditions

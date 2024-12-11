@@ -184,7 +184,7 @@ def evolve(U, t, dx, nx, gamma=1.4, cfl=0.5, theta=1.5):
 
     for i in range(1, t.size):
         U[i] = step(U[i-1], t[i] - t[i-1], dx, nx + 4)
-        print(f"t = {t[i]:.4f} s")
+        # print(f"t = {t[i]:.4f} s")
 
     end_time = time.time()
     print(f"Simulation completed in {end_time - start_time:.2f} seconds.")

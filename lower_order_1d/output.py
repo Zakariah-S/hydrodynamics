@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def plot_one_time(x, rho, v, p, t=None):
+    #Plot density, velocity, and pressure at a single given time.
+    #Density, velocity, and pressure arrays given should be only those for one time.
     plt.figure(figsize=(12, 8))
 
     plt.subplot(3, 1, 1)
@@ -23,7 +25,7 @@ def plot_one_time(x, rho, v, p, t=None):
     plt.show()
 
 def save_data(savename, U, x, t, gamma=1.4):
-    # Extract variables for plotting
+    # Given the full recorded set of conserved values, save the x, t, rho, v, and p arrays
     rho = U[:, :, 0]
     rho_v = U[:, :, 1]
     v = rho_v / rho
@@ -31,6 +33,7 @@ def save_data(savename, U, x, t, gamma=1.4):
     np.savez_compressed(savename, t=t, x=x, rho=rho, v=v, p=p)
 
 def load_data(infile):
+    #Load data that has been saved using the save_data() function
     loaded = np.load(infile, mmap_mode='r')
     t = loaded['t']
     x = loaded['x']
@@ -40,6 +43,9 @@ def load_data(infile):
     return t, x, rho, v, p
 
 def animate(t, x, rho, v, p, title='Sod Shock Simulation Results', interval=50):
+    #Given a full time-series data set (with separated density, velocity, and pressure arrays),
+    # animate the plots of density/velocity/pressure vs. x over time
+
     import matplotlib.animation as mani
     # Plot results
     fig = plt.figure(figsize=(12, 8))
@@ -79,10 +85,12 @@ def animate(t, x, rho, v, p, title='Sod Shock Simulation Results', interval=50):
     plt.show()
 
 def animate_from_file(infile, title='Sod Shock Simulation Results', interval=50):
+    #Wrapper function that lets you animate directly from a data file that was created using load_data()
     t, x, rho, v, p = load_data(infile)
     animate(t, x, rho, v, p, title, interval=interval)
 
 def residuals_animation(infile1, infile2, title='Sod Shock Simulation Residuals', legend1='1', legend2='2'):
+    #Plot the data from each file given, as well as the difference of the files' density/velocity/pressure vs. x plots
     import matplotlib.animation as mani
 
     t, x, rho1, v1, p1 = load_data(infile1)

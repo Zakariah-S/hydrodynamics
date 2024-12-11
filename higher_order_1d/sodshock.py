@@ -3,43 +3,43 @@ from evolution import evolve
 from output import *
 import numpy as np
 
-def sod_shock():
+def sod_shock(x_start, x_end, t_final, nx, nt, savename = 'test'):
     # Initialize independent and dependent variables
-    nx = 800
 
-    x_start = 0.0
-    x_end = 1.0
-    dx = (x_end - x_start) / (nx - 1)
-    x = np.linspace(x_start - 2 * dx, x_end + 2 * dx, nx + 4)  # Include ghost cells
+    x = np.linspace(x_start, x_end, nx)
+    rho = np.zeros(nx)
+    v = np.zeros(nx)
+    P = np.zeros(nx)
 
-    rho = np.zeros(nx + 4)
-    v = np.zeros(nx + 4)
-    P = np.zeros(nx + 4)
+    rho[x <= 0.5] = 10. #left side density
+    rho[x > 0.5] = 1. #right side density
+    P[x <= 0.5] = 8. #left side density
+    P[x > 0.5] = 1. #right side density
 
-    # Set up initial conditions for Sod shock tube
-    rho_L = 10.0
-    rho_R = 1.0
-    P_L = 8.0
-    P_R = 1.0
-    v_L = 0.0
-    v_R = 0.0
+    U, t, x = initialize(x, t_final, nt, rho, v, P)
+    U = evolve(U, t, x[1] - x[0], nx)
+    save_data(savename, U, x, t)
 
-    # Set up rho, v, and P in the container, excluding the "ghost cells" on the edges
-    x_physical = x[2:-2]
-    rho[2:-2][x_physical <= 0.5] = rho_L
-    rho[2:-2][x_physical > 0.5] = rho_R
-    P[2:-2][x_physical <= 0.5] = P_L
-    P[2:-2][x_physical > 0.5] = P_R
-    v[2:-2] = 0.
+sod_shock(x_start=0.,       #left side of tube
+          x_end = 1.,       #right side of tube
+          t_final = 0.4,    #time we record until (starting time is 0 s)
+          nx = 200,         #number of positions we track
+          nt = 40,          #number of time steps we take over the interval t_final - 0s
+          savename='testsodshock200')   #name of file we save data to (will have an .npz appended to it)
 
-    #Simulation and plotting
-    t_final = 0.40
-    steps = 40
+sod_shock(x_start=0.,       #left side of tube
+          x_end = 1.,       #right side of tube
+          t_final = 0.4,    #time we record until (starting time is 0 s)
+          nx = 400,         #number of positions we track
+          nt = 40,          #number of time steps we take over the interval t_final - 0s
+          savename='testsodshock400')   #name of file we save data to (will have an .npz appended to it)
 
-    U, t = initialize(rho, v, P, dx, t_final, steps)
-    U = evolve(U, t, dx, nx)
-    save_data("testsodshock800", U, x, t)
-sod_shock()
+sod_shock(x_start=0.,       #left side of tube
+          x_end = 1.,       #right side of tube
+          t_final = 0.4,    #time we record until (starting time is 0 s)
+          nx = 800,         #number of positions we track
+          nt = 40,          #number of time steps we take over the interval t_final - 0s
+          savename='testsodshock800')   #name of file we save data to (will have an .npz appended to it)
 
 # animate_from_file("testsodshock200.npz", interval=100)
 
