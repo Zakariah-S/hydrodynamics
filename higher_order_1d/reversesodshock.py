@@ -35,21 +35,23 @@ def reverse_sod_shock():
     #Simulation and plotting
     t_final = 0.25
 
-    U, step_size, steps = initialize(rho[::-1], v[::-1], P[::-1], dx, t_final)
+    U, step_size, steps = initialize(rho[::-1], v[::-1], P[::-1], dx, t_final) #reverse the halves of the tube
     U = evolve(U, step_size, t_final, dx, nx)
     t = step_size * np.arange(steps + 1)
     # # plot_from_one_U(U[-1], x)
     save_data("reversed_sodshock", U, x, t)
-reverse_sod_shock()
+# reverse_sod_shock()
 
 t, x, rho, v, p = load_data("sodshock.npz")
 tr, xr, rhor, vr, pr = load_data("reversed_sodshock.npz")
-# plot_one_time(x, rho[-1], v[-1], p[-1], t[-1])
 
-indices = np.argwhere(rho[1] != rhor[1, ::-1])
-print(indices)
-# print(np.argwhere(v[1] != vr[1, ::-1]))
-# print(np.argwhere(p[1] != pr[1, ::-1]))
+#If the arrays aren't mirror images of each other, find out for which indices this is true
+# indices = np.argwhere(rho[1] != rhor[1, ::-1])
+# print(indices)
+# indices = np.argwhere(v[100] != -vr[100, ::-1])
+# print(indices)
+# indices = np.argwhere(p[1] != pr[1, ::-1])
+# print(indices)
 
 #Compare the original with the reversed
-animate(t, x, rho - rhor[:, ::-1], np.abs(v) - np.abs(vr[:, ::-1]), p - pr[:, ::-1])
+# animate(t, x, rho - rhor[:, ::-1], np.abs(v) - np.abs(vr[:, ::-1]), p - pr[:, ::-1])

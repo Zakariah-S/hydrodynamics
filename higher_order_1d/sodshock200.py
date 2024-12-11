@@ -5,7 +5,7 @@ import numpy as np
 
 def sod_shock():
     # Initialize independent and dependent variables
-    nx = 400
+    nx = 200
 
     x_start = 0.0
     x_end = 1.0
@@ -33,15 +33,15 @@ def sod_shock():
     v[2:-2] = 0.
 
     #Simulation and plotting
-    t_final = 0.25
+    t_final = 0.40
+    steps = 40
 
-    U, step_size, steps = initialize(rho, v, P, dx, t_final)
-    U = evolve(U, step_size, t_final, dx, nx)
-    t = step_size * np.arange(steps + 1)
+    U, t = initialize(rho, v, P, dx, t_final, steps)
+    U = evolve(U, t, dx, nx)
     save_data("sodshock", U, x, t)
 sod_shock()
 
 t, x, rho, v, p = load_data("sodshock.npz")
-# plot_one_time(x, rho[-1], v[-1], p[-1], t[-1])
-
+# t, x, rho, v, p = load_data("sodshockx2.npz")
+# t, x, rho, v, p = load_data("sodshockx4.npz")
 animate(t, x, rho, v, p)

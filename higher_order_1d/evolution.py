@@ -176,28 +176,25 @@ def compute_time_step(U, dx, cfl, gamma):
     dt = cfl * dx / max_speed
     return dt
 
-def step(U, dt, t, t_final, dx, nx, gamma=1.4, cfl=0.5, theta=1.5):
+def step(U, dt, dx, nx, gamma=1.4, cfl=0.5, theta=1.5):
     if compute_time_step(U, dx, cfl, gamma) < dt:
-        U, t = step(U, 0.5 * dt, t, t_final, dx, nx, gamma=1.4, cfl=0.5, theta=1.5)
-        U, t = step(U, 0.5 * dt, t, t_final, dx, nx, gamma=1.4, cfl=0.5, theta=1.5)
-        return U, t
+        U = step(U, 0.5 * dt, dx, nx, gamma=1.4, cfl=0.5, theta=1.5)
+        U = step(U, 0.5 * dt, dx, nx, gamma=1.4, cfl=0.5, theta=1.5)
+        return U
+    else: 
+        U = shu_osher(U, nx + 4, dx, dt, gamma, theta)
+    return U
 
-    if t + dt > t_final:
-        dt = t_final - t
-    U = shu_osher(U, nx + 4, dx, dt, gamma, theta)
-    print(f"t = {t:.4f}, dt = {dt:.4e}")
-    return U, t + dt
-
-def evolve(U, step_size, t_final, dx, nx, gamma=1.4, cfl=0.5, theta=1.5):
+def evolve(U, t, dx, nx, gamma=1.4, cfl=0.5, theta=1.5):
     start_time = time.time()
-    t = 0.
+
     # Apply boundary conditions
     U[0] = apply_boundary_conditions(U[0])
+    t_final = t[-1]
 
-    i = 1
-    while t < t_final:
-        U[i], t = step(U[i-1], step_size, t, t_final, dx, nx)
-        i += 1
+    for i in range(1, t.size):
+        U[i] = step(U[i-1], t[i] - t[i-1], dx, nx)
+        print(f"t = {t[i]:.4f} s")
 
     end_time = time.time()
     print(f"Simulation completed in {end_time - start_time:.2f} seconds.")
