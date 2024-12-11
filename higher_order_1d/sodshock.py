@@ -5,7 +5,7 @@ import numpy as np
 
 def sod_shock():
     # Initialize independent and dependent variables
-    nx = 200
+    nx = 800
 
     x_start = 0.0
     x_end = 1.0
@@ -38,13 +38,13 @@ def sod_shock():
 
     U, t = initialize(rho, v, P, dx, t_final, steps)
     U = evolve(U, t, dx, nx)
-    save_data("testsodshock200", U, x, t)
+    save_data("testsodshock800", U, x, t)
 sod_shock()
 
 # animate_from_file("testsodshock200.npz", interval=100)
 
-t, x, rho, v, p = load_data("sodshock200.npz")
-tt, xt, rhot, vt, pt = load_data("testsodshock200.npz")
-print(np.all(np.abs(rho - rhot) < 1e-12))
-print(np.all(np.abs(v - vt) < 1e-12))
-print(np.all(np.abs(p - pt) < 1e-12))
+# t, x, rho, v, p = load_data("sodshock200.npz")
+# tt, xt, rhot, vt, pt = load_data("testsodshock200.npz")
+# print(np.all(np.abs(rho - rhot) < 1e-12))
+# print(np.all(np.abs(v - vt) < 1e-12))
+# print(np.all(np.abs(p - pt) < 1e-12))

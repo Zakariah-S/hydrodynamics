@@ -16,19 +16,6 @@ def reconstruct(c, theta):
     """
     Reconstruct left and right states at cell interfaces using minmod limiter.
     """
-    # nx = len(c)
-    # c_L = np.zeros(nx + 1)  # Interfaces from 0 to nx
-    # c_R = np.zeros(nx + 1)
-    # sigma = np.zeros(nx)
-
-    # delta_c_minus = c[2:nx-2] - c[1:nx-3]
-    # delta_c_plus = c[3:nx-1] - c[2:nx-2]
-    # delta_c_center = 0.5 * (c[3:nx-1] - c[1:nx-3])
-    # sigma[2:nx-2] = minmod(theta * delta_c_minus, delta_c_center, theta * delta_c_plus)
-
-    # c_L[2:nx-2] = c[2:nx-2] + 0.5 * sigma[2:nx-2]
-    # c_R[2:nx-2] = c[3:nx-1] - 0.5 * sigma[3:nx-1]
-
     c_L = np.zeros(c.size + 1)
     c_R = np.zeros(c.size + 1)
     sigma = np.zeros_like(c)
