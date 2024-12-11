@@ -103,7 +103,7 @@ def residuals_animation(infile1, infile2, title='Sod Shock Simulation Residuals'
     plt.ylim(np.min(rho1) - 0.5, np.max(rho1) + 0.5)
     plt.ylabel('Density')
     plt.legend()
-    plt.xticks(c='white')
+    plt.xticks(c='white', size=0.)
 
     fig.add_subplot(2, 3, 2)
     plt.title(title)
@@ -113,7 +113,7 @@ def residuals_animation(infile1, infile2, title='Sod Shock Simulation Residuals'
     plt.ylim(np.min(v1) - 0.5, np.max(v1) + 0.5)
     plt.ylabel('Velocity')
     plt.legend()
-    plt.xticks(c='white')
+    plt.xticks(c='white', size=0.)
 
 
     fig.add_subplot(2, 3, 3)
@@ -123,7 +123,7 @@ def residuals_animation(infile1, infile2, title='Sod Shock Simulation Residuals'
     plt.ylim(np.min(p1) - 0.5, np.max(p1) + 0.5)
     plt.ylabel('Pressure')
     plt.legend()
-    plt.xticks(c='white')
+    plt.xticks(c='white', size=0.)
 
     time_text = plt.annotate('t = 0 s', xy=(0.77, 0.92), xycoords='axes fraction', xytext=(0., 2.), textcoords='offset fontsize')
 
