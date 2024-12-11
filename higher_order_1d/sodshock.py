@@ -38,7 +38,13 @@ def sod_shock():
 
     U, t = initialize(rho, v, P, dx, t_final, steps)
     U = evolve(U, t, dx, nx)
-    save_data("testsodshock", U, x, t)
-# sod_shock()
+    save_data("testsodshock200", U, x, t)
+sod_shock()
 
-animate_from_file("testsodshock.npz", interval=100)
+# animate_from_file("testsodshock200.npz", interval=100)
+
+t, x, rho, v, p = load_data("sodshock200.npz")
+tt, xt, rhot, vt, pt = load_data("testsodshock200.npz")
+print(np.all(np.abs(rho - rhot) < 1e-12))
+print(np.all(np.abs(v - vt) < 1e-12))
+print(np.all(np.abs(p - pt) < 1e-12))
