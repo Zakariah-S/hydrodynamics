@@ -55,8 +55,10 @@ def compute_flux(U, gamma, axis):
     rho_vy = U[:, :, 2]
     E = U[:, :, 3]
 
+    print('.')
     v_x = rho_vx / rho
     v_y = rho_vy / rho
+    print('.')
     P = (gamma - 1) * (E - 0.5 * rho * (v_x ** 2 + v_y ** 2))
 
     F = np.zeros_like(U)
@@ -154,6 +156,7 @@ def compute_L(U, dx, dy, gamma, theta):
 
     v_x = rho_vx / rho
     v_y = rho_vy / rho
+
     P = (gamma - 1) * (E - 0.5 * rho * (v_x ** 2 + v_y ** 2))
 
     # Apply pressure floor
@@ -218,10 +221,10 @@ def apply_boundary_conditions(U):
     U[:, ny + 3, :] = U[:, 3, :]
 
     # Reflective boundary conditions in x-direction
-    U[0, :, :] = U[2, :, :]
+    U[0, :, :] = U[3, :, :]
     U[1, :, :] = U[2, :, :]
     U[nx + 2, :, :] = U[nx + 1, :, :]
-    U[nx + 3, :, :] = U[nx + 1, :, :]
+    U[nx + 3, :, :] = U[nx, :, :]
 
     return U
 
@@ -261,7 +264,7 @@ def shu_osher(U, dx, dy, dt, gamma, theta):
     U1 += dt * L1
     U1 = apply_boundary_conditions(U1)
     U1 = enforce_positivity(U1, gamma)
-
+    print('stage 1 done')
     # Stage 2
     L2 = compute_L(U1, dx, dy, gamma, theta)
     U2 = 0.75 * U + 0.25 * (U1 + dt * L2)
@@ -290,6 +293,7 @@ def compute_time_step(U, dx, dy, cfl, gamma):
 
     v_x = rho_vx / rho
     v_y = rho_vy / rho
+
     P = (gamma - 1) * (E - 0.5 * rho * (v_x ** 2 + v_y ** 2))
 
     # Apply pressure floor
@@ -386,6 +390,7 @@ def main():
         print(f"t = {t:.4f}, dt = {dt:.4e}")
         if not np.all(np.isfinite(U)):
             print("Non-finite values encountered in U.")
+            # print(np.argwhere(~np.isfinite(U)))
             break
 
     end_time = time.time()
@@ -421,7 +426,7 @@ def main():
     plt.xlabel('x')
     plt.ylabel('y')
     plt.tight_layout()
-    plt.show()
+    # plt.show()
 
     # Plot velocity field
     plt.figure(figsize=(8, 4))
@@ -430,7 +435,7 @@ def main():
     plt.xlabel('x')
     plt.ylabel('y')
     plt.tight_layout()
-    plt.show()
+    # plt.show()
 
     # Plot pressure contour
     plt.figure(figsize=(8, 4))
@@ -440,7 +445,7 @@ def main():
     plt.xlabel('x')
     plt.ylabel('y')
     plt.tight_layout()
-    plt.show()
+    # plt.show()
 
 if __name__ == "__main__":
     main()

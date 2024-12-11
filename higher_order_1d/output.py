@@ -46,7 +46,7 @@ def load_data(infile):
     p = loaded['p']
     return t, x, rho, v, p
 
-def animate(t, x, rho, v, p, title='Sod Shock Simulation Results'):
+def animate(t, x, rho, v, p, title='Sod Shock Simulation Results', interval=50):
     import matplotlib.animation as mani
     # Plot results
     fig = plt.figure(figsize=(12, 8))
@@ -81,13 +81,13 @@ def animate(t, x, rho, v, p, title='Sod Shock Simulation Results'):
         time_text.set_text(f't = {np.round(t[frame], 2):.2f} s')
         return density, vel, pressure, time_text
 
-    ani = mani.FuncAnimation(fig=fig, func=update, frames=range(1, t.size), interval=50)
+    ani = mani.FuncAnimation(fig=fig, func=update, frames=range(1, t.size), interval=interval)
 
     plt.show()
 
-def animate_from_file(infile, title):
+def animate_from_file(infile, title='Sod Shock Simulation Results', interval=50):
     t, x, rho, v, p = load_data(infile)
-    animate(t, x, rho, v, p, title)
+    animate(t, x, rho, v, p, title, interval=interval)
 
 def residuals_animation(infile1, infile2, title='Sod Shock Simulation Residuals', legend1='1', legend2='2'):
     import matplotlib.animation as mani
@@ -110,6 +110,7 @@ def residuals_animation(infile1, infile2, title='Sod Shock Simulation Residuals'
     plt.ylim(np.min(rho1) - 0.5, np.max(rho1) + 0.5)
     plt.ylabel('Density')
     plt.legend()
+    plt.xticks(c='white')
 
     fig.add_subplot(2, 3, 2)
     plt.title(title)
@@ -119,6 +120,8 @@ def residuals_animation(infile1, infile2, title='Sod Shock Simulation Residuals'
     plt.ylim(np.min(v1) - 0.5, np.max(v1) + 0.5)
     plt.ylabel('Velocity')
     plt.legend()
+    plt.xticks(c='white')
+
 
     fig.add_subplot(2, 3, 3)
     pres1, = plt.plot(x, p1[0], label=legend1)
@@ -127,8 +130,9 @@ def residuals_animation(infile1, infile2, title='Sod Shock Simulation Residuals'
     plt.ylim(np.min(p1) - 0.5, np.max(p1) + 0.5)
     plt.ylabel('Pressure')
     plt.legend()
+    plt.xticks(c='white')
 
-    time_text = plt.annotate('t = 0 s', xy=(0.93, 0.9), xycoords='axes fraction', xytext=(0., 2.), textcoords='offset fontsize')
+    time_text = plt.annotate('t = 0 s', xy=(0.77, 0.92), xycoords='axes fraction', xytext=(0., 2.), textcoords='offset fontsize')
 
     fig.add_subplot(2, 3, 4)
     dens_resid, = plt.plot(x, rho1[0] - rho2[0])
@@ -151,8 +155,6 @@ def residuals_animation(infile1, infile2, title='Sod Shock Simulation Residuals'
     plt.xlabel('x')
     plt.ylabel('Pressure Residuals')
 
-    # fig.add_subplot(111, frameon=False)
-    # plt.title(title)
     plt.tight_layout()
 
     def update(frame):

@@ -38,10 +38,7 @@ def sod_shock():
 
     U, t = initialize(rho, v, P, dx, t_final, steps)
     U = evolve(U, t, dx, nx)
-    save_data("sodshock", U, x, t)
-sod_shock()
+    save_data("testsodshock", U, x, t)
+# sod_shock()
 
-t, x, rho, v, p = load_data("sodshock.npz")
-# t, x, rho, v, p = load_data("sodshockx2.npz")
-# t, x, rho, v, p = load_data("sodshockx4.npz")
-animate(t, x, rho, v, p)
+animate_from_file("testsodshock.npz", interval=100)
