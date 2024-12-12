@@ -9,7 +9,7 @@ def minmod(a, b, c):
     sgn_a = np.sign(a)
     sgn_b = np.sign(b)
     sgn_c = np.sign(c)
-    min_abs = np.min([np.abs(a), np.abs(b), np.abs(c)])
+    min_abs = np.min([np.abs(a), np.abs(b), np.abs(c)], axis=0)
     return 0.25 * np.abs(sgn_a + sgn_b) * (sgn_a + sgn_c) * min_abs
 
 def deconstruct_U(U, gamma=1.4):
@@ -22,7 +22,7 @@ def deconstruct_U(U, gamma=1.4):
     P = (gamma - 1) * (U[:, :, 3] - 0.5 * (np.square(U[:, :, 1]) + np.square(U[:, :, 2])) / U[:, :, 0])
     return rho, vx, vy, P
 
-def compute_F(U, gamma):
+def compute_F_and_G(U, gamma):
     """
     Compute the flux vector F given conserved variables U.
     """
@@ -32,8 +32,15 @@ def compute_F(U, gamma):
     F[:, 0] = rho * vx
     F[:, 1] = rho * np.square(vx) + P
     F[:, 2] = rho * vx * vy
-    F[:, 3]
-    return F
+    F[:, 3] = (E + P) * vx
+
+    G = np.zeros_like(U)
+    G[:, 0] = rho * vy
+    G[:, 1] = rho * vx * vy
+    G[:, 2] = rho * np.square(vy) + P
+    G[:, 3] = (E + P) * vy
+
+    return F, G
 
 def apply_boundary_conditions(U):
     """
@@ -62,11 +69,14 @@ def reconstruct(c, theta):
             delta_c_center = 0.5 * (c[i + 1, j] - c[i - 1, j])
             sigma[i, j] = minmod(theta * delta_c_minus, delta_c_center, theta * delta_c_plus)
 
-    # Reconstruct left and right states at interfaces
-    for i in range(2, nx - 2):
-        for j in range(2, ny - 2):
-            c_L[i, j] = c[i, j] + 0.5 * sigma[i, j]
-            c_R[i, j] = c[i + 1, j] - 0.5 * sigma[i + 1, j]
+    # # Reconstruct left and right states at interfaces
+    # for i in range(2, nx - 2):
+    #     for j in range(2, ny - 2):
+    #         c_L[i, j] = c[i, j] + 0.5 * sigma[i, j]
+    #         c_R[i, j] = c[i + 1, j] - 0.5 * sigma[i + 1, j]
+
+    c_L[2:nx-2, 2:ny-2] = c[2:nx-2, 2:ny-2] + 0.5 * sigma[2:nx-2, 2:ny-2]
+    c_R[2:nx-2, 2:ny-2] = c[3:nx-1, 2:ny-2] - 0.5 * sigma[3:nx-1, 2:ny-2]
 
     return c_L, c_R
 
@@ -113,10 +123,10 @@ def compute_hll_flux(U_L, U_R, gamma):
     P_L = (gamma - 1) * (E_L - 0.5 * rho_L * (vx_L ** 2 + vy_L ** 2))
     P_R = (gamma - 1) * (E_R - 0.5 * rho_R * (vx_R ** 2 + vy_R ** 2))
 
-    P_L = max(P_L, 1e-6)
-    P_R = max(P_R, 1e-6)
-    rho_L = max(rho_L, 1e-6)
-    rho_R = max(rho_R, 1e-6)
+    P_L = np.maximum(P_L, 1e-6)
+    P_R = np.maximum(P_R, 1e-6)
+    rho_L = np.maximum(rho_L, 1e-6)
+    rho_R = np.maximum(rho_R, 1e-6)
 
     c_Lx = np.sqrt(gamma * P_L / rho_L)
     c_Ly = np.sqrt(gamma * P_L / rho_L)
