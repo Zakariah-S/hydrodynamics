@@ -52,7 +52,7 @@ def apply_boundary_conditions(U):
     U[:, -1] = U[:, 1]
     return U
 
-def reconstruct(c, theta):
+def get_adjacent_states(c, theta):
     """
     Reconstruct left and right states at cell interfaces using minmod limiter.
     """
@@ -153,7 +153,7 @@ def compute_hll_flux(U_L, U_R, gamma):
     S_Lx = min(vx_L - c_Lx, vx_R - c_Rx, 0.0)
     S_Rx = max(vx_L + c_Lx, vx_R + c_Rx, 0.0)
     S_Ly = min(vy_L - c_Ly, vy_R - c_Ry, 0.0)
-    S_Ry = max(vy_L + c_Ly, vy_R + c_Ry, 0.0)
+    S_Ry = np.max([vy_L + c_Ly, vy_R + c_Ry, np.zeros_like(vy_L)], axis=0)
     
     Fx_L, Fy_L = compute_flux(U_L, gamma)
     Fx_R, Fy_R = compute_flux(U_R, gamma)
@@ -197,7 +197,7 @@ def compute_L(U, nx, ny, dx, dy, gamma, theta):
             Lx[i, j, :] = (Fx_R - Fx_L) / dx
             Ly[i, j, :] = (Fy_R - Fy_L) / dy
     
-    
+
 
     return Lx, Ly
 
