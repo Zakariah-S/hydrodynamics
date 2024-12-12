@@ -1,6 +1,7 @@
-
 import numpy as np
-from evolution import minmod, apply_boundary_conditions, compute_hll_flux
+import sys
+sys.path.insert(1, '..')
+from higher_order_1d.evolution import minmod, apply_boundary_conditions, compute_hll_flux
 
 # Unit Test for Minmod Function
 def test_minmod():
