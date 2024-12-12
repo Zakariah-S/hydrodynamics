@@ -57,17 +57,19 @@ def reconstruct(c, theta):
     Reconstruct left and right states at cell interfaces using minmod limiter.
     """
     nx, ny = c.shape
-    c_L = np.zeros((nx + 1, ny + 1))
-    c_R = np.zeros((nx + 1, ny + 1))
+    c_Lx = np.zeros((nx + 1, ny + 1))
+    c_Rx = np.zeros((nx + 1, ny + 1))
+    c_Ly = np.zeros((nx + 1, ny + 1))
+    c_Ry = np.zeros((nx + 1, ny + 1))
     sigma = np.zeros((nx, ny))
 
-    # Compute slopes
-    for i in range(2, nx - 2):
-        for j in range(2, ny - 2):
-            delta_c_minus = c[i, j] - c[i - 1, j]
-            delta_c_plus = c[i + 1, j] - c[i, j]
-            delta_c_center = 0.5 * (c[i + 1, j] - c[i - 1, j])
-            sigma[i, j] = minmod(theta * delta_c_minus, delta_c_center, theta * delta_c_plus)
+    # # Compute slopes
+    # for i in range(2, nx - 2):
+    #     for j in range(2, ny - 2):
+    #         delta_c_minus = c[i, j] - c[i - 1, j]
+    #         delta_c_plus = c[i + 1, j] - c[i, j]
+    #         delta_c_center = 0.5 * (c[i + 1, j] - c[i - 1, j])
+    #         sigma[i, j] = minmod(theta * delta_c_minus, delta_c_center, theta * delta_c_plus)
 
     # # Reconstruct left and right states at interfaces
     # for i in range(2, nx - 2):
@@ -75,10 +77,25 @@ def reconstruct(c, theta):
     #         c_L[i, j] = c[i, j] + 0.5 * sigma[i, j]
     #         c_R[i, j] = c[i + 1, j] - 0.5 * sigma[i + 1, j]
 
-    c_L[2:nx-2, 2:ny-2] = c[2:nx-2, 2:ny-2] + 0.5 * sigma[2:nx-2, 2:ny-2]
-    c_R[2:nx-2, 2:ny-2] = c[3:nx-1, 2:ny-2] - 0.5 * sigma[3:nx-1, 2:ny-2]
+    #'left' and 'right' states along x-axis
+    delta_c_minus =     c[2:nx-2,2:nx-2] - c[1:nx-3,2:nx-2]
+    delta_c_plus =      c[3:nx-1,2:nx-2] - c[2:nx-2,2:nx-2]
+    delta_c_center =    c[3:nx-1,2:nx-2] - c[1:nx-3,2:nx-2]
+    sigma[2:nx-2,2:nx-2] = minmod(theta * delta_c_minus, 0.5 * delta_c_center, theta * delta_c_plus)
 
-    return c_L, c_R
+    c_Lx[2:nx-2, 2:ny-2] = c[2:nx-2, 2:ny-2] + 0.5 * sigma[2:nx-2, 2:ny-2]
+    c_Rx[2:nx-2, 2:ny-2] = c[3:nx-1, 2:ny-2] - 0.5 * sigma[3:nx-1, 2:ny-2]
+
+    #'left' and 'right' states along y-axis
+    delta_c_minus =     c[2:nx-2,2:nx-2] - c[2:nx-2,1:nx-3]
+    delta_c_plus =      c[2:nx-2,3:nx-1] - c[2:nx-2,2:nx-2]
+    delta_c_center =    c[2:nx-2,3:nx-1] - c[2:nx-2,1:nx-3]
+    sigma[2:nx-2,2:nx-2] = minmod(theta * delta_c_minus, 0.5 * delta_c_center, theta * delta_c_plus)
+
+    c_Ly[2:nx-2, 2:ny-2] = c[2:nx-2, 2:ny-2] + 0.5 * sigma[2:nx-2, 2:ny-2]
+    c_Ry[2:nx-2, 2:ny-2] = c[2:nx-2, 3:ny-1] - 0.5 * sigma[2:nx-2, 3:ny-1]
+
+    return c_Lx, c_Rx, c_Ly, c_Ry
 
 def compute_flux(U, gamma):
     """
@@ -179,6 +196,8 @@ def compute_L(U, nx, ny, dx, dy, gamma, theta):
             # Update Lx and Ly for this interface
             Lx[i, j, :] = (Fx_R - Fx_L) / dx
             Ly[i, j, :] = (Fy_R - Fy_L) / dy
+    
+    
 
     return Lx, Ly
 
