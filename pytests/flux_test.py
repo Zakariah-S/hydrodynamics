@@ -1,5 +1,8 @@
 import numpy as np
-from evolution import compute_hll_flux, compute_flux
+import sys
+sys.path.insert(1, '..')
+from higher_order_1d.evolution import compute_hll_flux, compute_flux
+
 def test_compute_hll_flux_equal_states():
     gamma = 1.4
     U_L = np.array([[1.0, 0.0, 2.5]])
