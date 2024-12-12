@@ -1,11 +1,11 @@
 import numpy as np
 import time
 
-def apply_boundary_conditions(F):
+def apply_boundary_conditions(F, F_cells):
     #Reflective boundary conditions; the flux at the outer edges (outside the bounds of our x values)
     # is set to be the same as the innermost and outermost edge fluxes
-    F[0] = F[1]
-    F[-1] = F[-2]
+    F[0] = F_cells[0]
+    F[-1] = F_cells[-1]
     return F
 
 def deconstruct_U(U, gamma=1.4):
@@ -62,7 +62,7 @@ def step(U, F, dt, dx, gamma=1.4, cfl=0.5):
         #Update fluxes at interfaces using HLL
         F[1:-1, :] = ((alpha_plus * F_cells[:-1, :].T + alpha_minus * F_cells[1:, :].T - 
                        alpha_plus * alpha_minus * (U_new[1:, :] - U_new[:-1, :]).T) / (alpha_plus + alpha_minus)).T
-        F = apply_boundary_conditions(F)
+        F = apply_boundary_conditions(F, F_cells)
 
     return U_new, F
 
@@ -90,8 +90,10 @@ def evolve(U, F, t, dx, gamma=1.4, cfl=0.5):
     #Get time step length
     dt = t[1] - t[0]
 
+    rho, v, p = deconstruct_U(U[0])
+    F_cells = get_F_cells(rho, v, p, gamma)
     # Apply boundary conditions
-    F = apply_boundary_conditions(F)
+    F = apply_boundary_conditions(F, F_cells)
 
     #Factor out dimensions
     #Get the normalization constants corresponding to each U_i

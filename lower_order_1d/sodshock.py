@@ -22,11 +22,13 @@ def sod_shock(cells, x_start, x_end, t_final, t_steps, savename):
     U = evolve(U, F, t, dx)
     if savename: save_data(savename, U, x, t)
 
-sod_shock(cells = 200,
+sod_shock(cells = 400,
           x_start = 0.,
           x_end = 1.,
           t_final = 0.4,
           t_steps = 40,
-          savename="testsodshock200")
+          savename="testsodshock400")
 
-compare_files('sodshock200.npz', 'testsodshock200.npz')
+# compare_files('sodshock200.npz', 'testsodshock200.npz')
+# animate_from_file('testsodshock400.npz')
+# animate_from_file('testsodshock800.npz')
