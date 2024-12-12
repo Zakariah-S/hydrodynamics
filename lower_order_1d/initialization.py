@@ -1,3 +1,7 @@
+"""
+Grid initialization module for lower-order 1D simulation.
+"""
+
 import numpy as np
 from evolution import compute_time_step
 

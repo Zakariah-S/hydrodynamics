@@ -1,9 +1,13 @@
+"""
+Module with functions that guide the evolution of the 1-D fluid system, with lower-order errors.
+"""
+
 import numpy as np
 import time
 
 def apply_boundary_conditions(F, F_cells):
-    #Reflective boundary conditions; the flux at the outer edges (outside the bounds of our x values)
-    # is set to be the same as the innermost and outermost edge fluxes
+    #"No-slip boundary" conditions: Set flux on the outer edges of the simulation given that 
+    # U is required to not vary between the outermost cells and the outside
     F[0] = F_cells[0]
     F[-1] = F_cells[-1]
     return F

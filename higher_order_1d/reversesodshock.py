@@ -1,3 +1,7 @@
+"""
+Switch the left and right sides of the sod shock tube, for the higher-order simulation.
+"""
+
 from initialization import initialize
 from evolution import evolve
 from output import *

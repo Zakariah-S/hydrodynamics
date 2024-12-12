@@ -1,3 +1,7 @@
+"""
+Compare simulation results with the exact solution.
+"""
+
 from output import *
 import numpy as np
 
