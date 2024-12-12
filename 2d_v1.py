@@ -10,8 +10,40 @@ def minmod(a, b, c):
     sgn_b = np.sign(b)
     sgn_c = np.sign(c)
     min_abs = np.min([np.abs(a), np.abs(b), np.abs(c)])
-    result = 0.25 * (sgn_a + sgn_b) * (sgn_a + sgn_c) * min_abs
-    return result
+    return 0.25 * np.abs(sgn_a + sgn_b) * (sgn_a + sgn_c) * min_abs
+
+def deconstruct_U(U, gamma=1.4):
+    """
+    Get rho, v, and p from U
+    """
+    rho = U[:, :, 0]
+    vx = U[:, :, 1] / U[:, :, 0]
+    vy = U[:, :, 2] / U[:, :, 0]
+    P = (gamma - 1) * (U[:, :, 3] - 0.5 * (np.square(U[:, :, 1]) + np.square(U[:, :, 2])) / U[:, :, 0])
+    return rho, vx, vy, P
+
+def compute_F(U, gamma):
+    """
+    Compute the flux vector F given conserved variables U.
+    """
+    rho, vx, vy, P = deconstruct_U(U, gamma)
+    E = U[:, 3]
+    F = np.zeros_like(U)
+    F[:, 0] = rho * vx
+    F[:, 1] = rho * np.square(vx) + P
+    F[:, 2] = rho * vx * vy
+    F[:, 3]
+    return F
+
+def apply_boundary_conditions(U):
+    """
+    Apply periodic boundary conditions in both directions.
+    """
+    U[0, :] = U[-2, :]
+    U[-1, :] = U[1, :]
+    U[:, 0] = U[:, -2]
+    U[:, -1] = U[:, 1]
+    return U
 
 def reconstruct(c, theta):
     """
@@ -111,16 +143,6 @@ def compute_hll_flux(U_L, U_R, gamma):
         F_HLLy = (S_Ry * Fy_L - S_Ly * Fy_R + S_Ly * S_Ry * (U_R - U_L)) / (S_Ry - S_Ly)
 
     return F_HLLx, F_HLLy
-
-def apply_boundary_conditions(U):
-    """
-    Apply periodic boundary conditions in both directions.
-    """
-    U[0, :] = U[-2, :]
-    U[-1, :] = U[1, :]
-    U[:, 0] = U[:, -2]
-    U[:, -1] = U[:, 1]
-    return U
 
 def compute_L(U, nx, ny, dx, dy, gamma, theta):
     """

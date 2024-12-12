@@ -34,10 +34,6 @@ def reconstruct(c, theta):
 
     return c_L, c_R
 
-def construct_U(rho, v, P, gamma=1.4):
-    U = np.zeros((rho.size, 3))
-    U[:, 0] = rho
-
 def deconstruct_U(U, gamma=1.4):
     """
     Get rho, v, and p from U
