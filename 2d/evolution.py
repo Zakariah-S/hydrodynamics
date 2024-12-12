@@ -20,45 +20,70 @@ def reconstruct(c, theta):
     """
     Reconstruct left and right states at cell interfaces using minmod limiter.
     """
-    c_L = np.zeros(c.size + 1)
-    c_R = np.zeros(c.size + 1)
+    nx, ny = c.shape
+    c_Lx = np.zeros((c.size + 1, c.size + 1))
+    c_Rx = np.zeros((c.size + 1, c.size + 1))
+    c_Ly = np.zeros((c.size + 1, c.size + 1))
+    c_Ry = np.zeros((c.size + 1, c.size + 1))
     sigma = np.zeros_like(c)
 
-    delta_c_minus = c[2:-3] - c[1:-4]
-    delta_c_plus = c[3:-2] - c[2:-3]
-    delta_c_center = 0.5 * (c[3:-2] - c[1:-4])
-    sigma[2:-3] = minmod(theta * delta_c_minus, delta_c_center, theta * delta_c_plus)
+    #'left' and 'right' states along x-axis
+    delta_c_minus =     c[2:nx-2,2:nx-2] - c[1:nx-3,2:nx-2]
+    delta_c_plus =      c[3:nx-1,2:nx-2] - c[2:nx-2,2:nx-2]
+    delta_c_center =    c[3:nx-1,2:nx-2] - c[1:nx-3,2:nx-2]
+    sigma[2:nx-2,2:nx-2] = minmod(theta * delta_c_minus, 0.5 * delta_c_center, theta * delta_c_plus)
 
-    c_L[2:-4] = c[2:-3] + 0.5 * sigma[2:-3]
-    c_R[2:-4] = c[3:-2] - 0.5 * sigma[3:-2]
+    c_Lx[2:nx-2, 2:ny-2] = c[2:nx-2, 2:ny-2] + 0.5 * sigma[2:nx-2, 2:ny-2]
+    c_Rx[2:nx-2, 2:ny-2] = c[3:nx-1, 2:ny-2] - 0.5 * sigma[3:nx-1, 2:ny-2]
 
-    return c_L, c_R
+    #'left' and 'right' states along y-axis
+    delta_c_minus =     c[2:nx-2,2:nx-2] - c[2:nx-2,1:nx-3]
+    delta_c_plus =      c[2:nx-2,3:nx-1] - c[2:nx-2,2:nx-2]
+    delta_c_center =    c[2:nx-2,3:nx-1] - c[2:nx-2,1:nx-3]
+    sigma[2:nx-2,2:nx-2] = minmod(theta * delta_c_minus, 0.5 * delta_c_center, theta * delta_c_plus)
+
+    c_Ly[2:nx-2, 2:ny-2] = c[2:nx-2, 2:ny-2] + 0.5 * sigma[2:nx-2, 2:ny-2]
+    c_Ry[2:nx-2, 2:ny-2] = c[2:nx-2, 3:ny-1] - 0.5 * sigma[2:nx-2, 3:ny-1]
+
+    return c_Lx, c_Rx, c_Ly, c_Ry
 
 def construct_U(rho, v, p, gamma=1.4):
-    U = np.zeros((rho.size, 3))
-    U[:, 0] = rho
-    U[:, 1] = rho * v
-    U[:, 2] = p/(gamma - 1.) + 0.5 * rho * np.square(v)
+    U = np.zeros((rho.shape[0], rho.shape[1], 3))
+    U[:, :, 0] = rho
+    U[:, :, 1] = rho * v
+    U[:, :, 2] = p/(gamma - 1.) + 0.5 * rho * np.square(v)
     return U
 
 def deconstruct_U(U, gamma=1.4):
     """
     Get rho, v, and p from U
     """
-    rho = U[:, 0]
-    v = U[:, 1] / U[:, 0]
-    P = (gamma - 1) * (U[:, 2] - 0.5 * np.square(U[:, 1]) / U[:, 0])
-    return rho, v, P
+    rho = U[:, :, 0]
+    vx = U[:, :, 1] / U[:, :, 0]
+    vy = U[:, :, 2] / U[:, :, 0]
+    P = (gamma - 1) * (U[:, :, 3] - 0.5 * (np.square(U[:, :, 1]) + np.square(U[:, :, 2])) / U[:, :, 0])
+    return rho, vx, vy, P
 
-def compute_flux(rho, v, P, gamma):
+def compute_F(rho, vx, vy, P, gamma=1.4):
     """
     Compute the flux vector F given conserved variables U.
     """
-    F = np.zeros((rho.size, 3))
-    F[:, 0] = rho * v
-    F[:, 1] = rho * np.square(v) + P
-    F[:, 2] = (P * (gamma/(gamma - 1.)) + 0.5 * rho * np.square(v)) * v
+    shape = rho.shape
+    F = np.zeros((shape[0], shape[1], shape[2], 4))
+    F[:, :, 0] = rho * vx
+    F[:, :, 1] = rho * np.square(vx) + P
+    F[:, :, 2] = rho * vx * vy
+    F[:, :, 3] = (P*gamma/(gamma - 1.) + 0.5 * rho * (np.square(vx) + np.square(vy))) * vx
     return F
+
+def compute_G(rho, vx, vy, P, gamma=1.4):
+    shape = rho.shape
+    G = np.zeros((shape[0], shape[1], shape[2], 4))
+    G[:, :, 0] = rho * vy
+    G[:, :, 1] = rho * vx * vy
+    G[:, :, 2] = rho * np.square(vy) + P
+    G[:, :, 3] = (P*gamma/(gamma - 1.) + 0.5 * rho * (np.square(vx) + np.square(vy))) * vy
+    return G
 
 def compute_hll_flux(U_L, U_R, gamma):
     """
@@ -79,8 +104,10 @@ def compute_hll_flux(U_L, U_R, gamma):
     S_L = np.min([v_L - c_L, v_R - c_R, np.zeros_like(v_L)], axis=0)
     S_R = np.max([v_L + c_L, v_R + c_R, np.zeros_like(v_R)], axis=0)
 
-    F_L = compute_flux(rho_L, v_L, P_L, gamma).T
-    F_R = compute_flux(rho_R, v_R, P_R, gamma).T
+    F_HLL = np.zeros_like(U_L)
+
+    F_L = compute_F(U_L, gamma).T
+    F_R = compute_F(U_R, gamma).T
 
     F_HLL = ((S_R * F_L - S_L * F_R + S_L * S_R * (U_R.T - U_L.T)) / (S_R - S_L)).T
 
@@ -114,16 +141,15 @@ def compute_L(U, nx, dx, gamma, theta):
 
 def apply_boundary_conditions(U):
     """
-    Apply boundary conditions to U.
+    Apply periodic boundary conditions in both directions.
     """
-    # Reflective boundary conditions
-    U[0, :] = U[3, :]
-    U[1, :] = U[2, :]
-    U[-1, :] = U[-4, :]
-    U[-2, :] = U[-3, :]
+    U[0, :, :] = U[-2, :, :]
+    U[-1, :, :] = U[1, :, :]
+    U[:, 0, :] = U[:, -2, :]
+    U[:, -1, :] = U[:, 1, :]
     return U
 
-def shu_osher(U, nx, dx, dt, gamma, theta):
+def shu_osher(U, nx, dx, dy, dt, gamma, theta):
     """
     Perform a time step using the Shu-Osher third-order scheme.
     """
