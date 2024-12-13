@@ -1,7 +1,6 @@
 """
 Module with functions that guide the evolution of the 1-D fluid system, with lower-order errors.
 """
-
 import numpy as np
 import time
 
@@ -34,6 +33,13 @@ def reconstruct(c, theta):
 
     return c_L, c_R
 
+def construct_U(rho, v, p, gamma=1.4):
+    U = np.zeros((rho.size, 3))
+    U[:, 0] = rho
+    U[:, 1] = rho * v
+    U[:, 2] = p/(gamma - 1.) + 0.5 * rho * np.square(v)
+    return U
+
 def deconstruct_U(U, gamma=1.4):
     """
     Get rho, v, and p from U
@@ -43,16 +49,14 @@ def deconstruct_U(U, gamma=1.4):
     P = (gamma - 1) * (U[:, 2] - 0.5 * np.square(U[:, 1]) / U[:, 0])
     return rho, v, P
 
-def compute_flux(U, gamma):
+def compute_flux(rho, v, P, gamma):
     """
     Compute the flux vector F given conserved variables U.
     """
-    rho, v, P = deconstruct_U(U, gamma)
-    E = U[:, 2]
-    F = np.zeros_like(U)
+    F = np.zeros((rho.size, 3))
     F[:, 0] = rho * v
-    F[:, 1] = rho * v ** 2 + P
-    F[:, 2] = (E + P) * v
+    F[:, 1] = rho * np.square(v) + P
+    F[:, 2] = (P * (gamma/(gamma - 1.)) + 0.5 * rho * np.square(v)) * v
     return F
 
 def compute_hll_flux(U_L, U_R, gamma):
@@ -74,10 +78,8 @@ def compute_hll_flux(U_L, U_R, gamma):
     S_L = np.min([v_L - c_L, v_R - c_R, np.zeros_like(v_L)], axis=0)
     S_R = np.max([v_L + c_L, v_R + c_R, np.zeros_like(v_R)], axis=0)
 
-    F_HLL = np.zeros_like(U_L)
-
-    F_L = compute_flux(U_L, gamma).T
-    F_R = compute_flux(U_R, gamma).T
+    F_L = compute_flux(rho_L, v_L, P_L, gamma).T
+    F_R = compute_flux(rho_R, v_R, P_R, gamma).T
 
     F_HLL = ((S_R * F_L - S_L * F_R + S_L * S_R * (U_R.T - U_L.T)) / (S_R - S_L)).T
 
@@ -88,11 +90,8 @@ def compute_L(U, nx, dx, gamma, theta):
     Compute the spatial derivative operator L(U).
     """
     L = np.zeros_like(U)
-    rho = U[:, 0]
-    rho_v = U[:, 1]
-    E = U[:, 2]
-    v = rho_v / rho
-    P = (gamma - 1) * (E - 0.5 * rho * v ** 2)
+
+    rho, v, P = deconstruct_U(U)
 
     # Reconstruct variables
     rho_L, rho_R = reconstruct(rho, theta)
@@ -101,14 +100,11 @@ def compute_L(U, nx, dx, gamma, theta):
 
     U_L = np.zeros((nx + 1, 3))
     U_R = np.zeros((nx + 1, 3))
-    F = np.zeros((nx + 1, 3))
 
-    U_L[2:nx-2, 0] = rho_L[2:nx-2]
-    U_L[2:nx-2, 1] = rho_L[2:nx-2] * v_L[2:nx-2]
-    U_L[2:nx-2, 2] = P_L[2:nx-2] / (gamma - 1) + 0.5 * rho_L[2:nx-2] * v_L[2:nx-2] ** 2
-    U_R[2:nx-2, 0] = rho_R[2:nx-2]
-    U_R[2:nx-2, 1] = rho_R[2:nx-2] * v_R[2:nx-2]
-    U_R[2:nx-2, 2] = P_R[2:nx-2] / (gamma - 1) + 0.5 * rho_R[2:nx-2] * v_R[2:nx-2] ** 2
+    U_L[2:nx-2] = construct_U(rho_L[2:nx-2], v_L[2:nx-2], P_L[2:nx-2])
+    U_R[2:nx-2] = construct_U(rho_R[2:nx-2], v_R[2:nx-2], P_R[2:nx-2])
+
+    F = np.zeros((nx + 1, 3))
 
     F[2:nx-2] = compute_hll_flux(U_L[2:nx-2], U_R[2:nx-2], gamma)
     L[3:nx-3] = - (F[3:nx-3] - F[2:nx-4]) / dx

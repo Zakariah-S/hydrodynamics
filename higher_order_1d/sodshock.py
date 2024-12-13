@@ -66,7 +66,7 @@ sod_shock(x_start = 0.,
 
     # animate_from_file("testsodshock200.npz", interval=100)
 
-    # compare_files("sodshock200.npz", "testsodshock200.npz")
+    compare_files("sodshock200.npz", "testsodshock200.npz")
 
     # residuals_animation('testsodshock200.npz', 'sodshock200.npz', legend1='test', legend2='original')
 

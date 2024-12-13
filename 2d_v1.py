@@ -9,7 +9,7 @@ def minmod(a, b, c):
     sgn_a = np.sign(a)
     sgn_b = np.sign(b)
     sgn_c = np.sign(c)
-    min_abs = np.min([np.abs(a), np.abs(b), np.abs(c)])
+    min_abs = np.min([np.abs(a), np.abs(b), np.abs(c)], axis=0)
     return 0.25 * np.abs(sgn_a + sgn_b) * (sgn_a + sgn_c) * min_abs
 
 def deconstruct_U(U, gamma=1.4):
@@ -22,7 +22,7 @@ def deconstruct_U(U, gamma=1.4):
     P = (gamma - 1) * (U[:, :, 3] - 0.5 * (np.square(U[:, :, 1]) + np.square(U[:, :, 2])) / U[:, :, 0])
     return rho, vx, vy, P
 
-def compute_F(U, gamma):
+def compute_F_and_G(U, gamma):
     """
     Compute the flux vector F given conserved variables U.
     """
@@ -32,8 +32,15 @@ def compute_F(U, gamma):
     F[:, 0] = rho * vx
     F[:, 1] = rho * np.square(vx) + P
     F[:, 2] = rho * vx * vy
-    F[:, 3]
-    return F
+    F[:, 3] = (E + P) * vx
+
+    G = np.zeros_like(U)
+    G[:, 0] = rho * vy
+    G[:, 1] = rho * vx * vy
+    G[:, 2] = rho * np.square(vy) + P
+    G[:, 3] = (E + P) * vy
+
+    return F, G
 
 def apply_boundary_conditions(U):
     """
@@ -45,30 +52,50 @@ def apply_boundary_conditions(U):
     U[:, -1] = U[:, 1]
     return U
 
-def reconstruct(c, theta):
+def get_adjacent_states(c, theta):
     """
     Reconstruct left and right states at cell interfaces using minmod limiter.
     """
     nx, ny = c.shape
-    c_L = np.zeros((nx + 1, ny + 1))
-    c_R = np.zeros((nx + 1, ny + 1))
+    c_Lx = np.zeros((nx + 1, ny + 1))
+    c_Rx = np.zeros((nx + 1, ny + 1))
+    c_Ly = np.zeros((nx + 1, ny + 1))
+    c_Ry = np.zeros((nx + 1, ny + 1))
     sigma = np.zeros((nx, ny))
 
-    # Compute slopes
-    for i in range(2, nx - 2):
-        for j in range(2, ny - 2):
-            delta_c_minus = c[i, j] - c[i - 1, j]
-            delta_c_plus = c[i + 1, j] - c[i, j]
-            delta_c_center = 0.5 * (c[i + 1, j] - c[i - 1, j])
-            sigma[i, j] = minmod(theta * delta_c_minus, delta_c_center, theta * delta_c_plus)
+    # # Compute slopes
+    # for i in range(2, nx - 2):
+    #     for j in range(2, ny - 2):
+    #         delta_c_minus = c[i, j] - c[i - 1, j]
+    #         delta_c_plus = c[i + 1, j] - c[i, j]
+    #         delta_c_center = 0.5 * (c[i + 1, j] - c[i - 1, j])
+    #         sigma[i, j] = minmod(theta * delta_c_minus, delta_c_center, theta * delta_c_plus)
 
-    # Reconstruct left and right states at interfaces
-    for i in range(2, nx - 2):
-        for j in range(2, ny - 2):
-            c_L[i, j] = c[i, j] + 0.5 * sigma[i, j]
-            c_R[i, j] = c[i + 1, j] - 0.5 * sigma[i + 1, j]
+    # # Reconstruct left and right states at interfaces
+    # for i in range(2, nx - 2):
+    #     for j in range(2, ny - 2):
+    #         c_L[i, j] = c[i, j] + 0.5 * sigma[i, j]
+    #         c_R[i, j] = c[i + 1, j] - 0.5 * sigma[i + 1, j]
 
-    return c_L, c_R
+    #'left' and 'right' states along x-axis
+    delta_c_minus =     c[2:nx-2,2:nx-2] - c[1:nx-3,2:nx-2]
+    delta_c_plus =      c[3:nx-1,2:nx-2] - c[2:nx-2,2:nx-2]
+    delta_c_center =    c[3:nx-1,2:nx-2] - c[1:nx-3,2:nx-2]
+    sigma[2:nx-2,2:nx-2] = minmod(theta * delta_c_minus, 0.5 * delta_c_center, theta * delta_c_plus)
+
+    c_Lx[2:nx-2, 2:ny-2] = c[2:nx-2, 2:ny-2] + 0.5 * sigma[2:nx-2, 2:ny-2]
+    c_Rx[2:nx-2, 2:ny-2] = c[3:nx-1, 2:ny-2] - 0.5 * sigma[3:nx-1, 2:ny-2]
+
+    #'left' and 'right' states along y-axis
+    delta_c_minus =     c[2:nx-2,2:nx-2] - c[2:nx-2,1:nx-3]
+    delta_c_plus =      c[2:nx-2,3:nx-1] - c[2:nx-2,2:nx-2]
+    delta_c_center =    c[2:nx-2,3:nx-1] - c[2:nx-2,1:nx-3]
+    sigma[2:nx-2,2:nx-2] = minmod(theta * delta_c_minus, 0.5 * delta_c_center, theta * delta_c_plus)
+
+    c_Ly[2:nx-2, 2:ny-2] = c[2:nx-2, 2:ny-2] + 0.5 * sigma[2:nx-2, 2:ny-2]
+    c_Ry[2:nx-2, 2:ny-2] = c[2:nx-2, 3:ny-1] - 0.5 * sigma[2:nx-2, 3:ny-1]
+
+    return c_Lx, c_Rx, c_Ly, c_Ry
 
 def compute_flux(U, gamma):
     """
@@ -113,10 +140,10 @@ def compute_hll_flux(U_L, U_R, gamma):
     P_L = (gamma - 1) * (E_L - 0.5 * rho_L * (vx_L ** 2 + vy_L ** 2))
     P_R = (gamma - 1) * (E_R - 0.5 * rho_R * (vx_R ** 2 + vy_R ** 2))
 
-    P_L = max(P_L, 1e-6)
-    P_R = max(P_R, 1e-6)
-    rho_L = max(rho_L, 1e-6)
-    rho_R = max(rho_R, 1e-6)
+    P_L = np.maximum(P_L, 1e-6)
+    P_R = np.maximum(P_R, 1e-6)
+    rho_L = np.maximum(rho_L, 1e-6)
+    rho_R = np.maximum(rho_R, 1e-6)
 
     c_Lx = np.sqrt(gamma * P_L / rho_L)
     c_Ly = np.sqrt(gamma * P_L / rho_L)
@@ -126,7 +153,7 @@ def compute_hll_flux(U_L, U_R, gamma):
     S_Lx = min(vx_L - c_Lx, vx_R - c_Rx, 0.0)
     S_Rx = max(vx_L + c_Lx, vx_R + c_Rx, 0.0)
     S_Ly = min(vy_L - c_Ly, vy_R - c_Ry, 0.0)
-    S_Ry = max(vy_L + c_Ly, vy_R + c_Ry, 0.0)
+    S_Ry = np.max([vy_L + c_Ly, vy_R + c_Ry, np.zeros_like(vy_L)], axis=0)
     
     Fx_L, Fy_L = compute_flux(U_L, gamma)
     Fx_R, Fy_R = compute_flux(U_R, gamma)
@@ -169,6 +196,8 @@ def compute_L(U, nx, ny, dx, dy, gamma, theta):
             # Update Lx and Ly for this interface
             Lx[i, j, :] = (Fx_R - Fx_L) / dx
             Ly[i, j, :] = (Fy_R - Fy_L) / dy
+    
+
 
     return Lx, Ly
 
