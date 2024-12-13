@@ -1,7 +1,6 @@
 """
 Module with functions that guide the evolution of the 1-D fluid system, with lower-order errors.
 """
-
 import numpy as np
 import time
 
@@ -76,6 +75,7 @@ def compute_F(rho, vx, vy, P, gamma=1.4):
     F[:, :, 1] = rho * np.square(vx) + P
     F[:, :, 2] = rho * vx * vy
     F[:, :, 3] = (P*gamma/(gamma - 1.) + 0.5 * rho * (np.square(vx) + np.square(vy))) * vx
+
     return F
 
 def compute_G(rho, vx, vy, P, gamma=1.4):
@@ -109,8 +109,8 @@ def compute_hll_flux(U_L, U_R, axis, gamma=1.4):
 
         F_HLL = np.zeros_like(U_L)
 
-        F_L = compute_F(rho_L, vx_L, P_R, gamma).T
-        F_R = compute_F(rho_L, vx_L, P_L, gamma).T
+        F_L = compute_F(rho_L, vx_L, P_R, gamma).transpose((2, 0, 1))
+        F_R = compute_F(rho_L, vx_L, P_L, gamma).transpose((2, 0, 1))
 
     elif axis == 'y':
         S_L = np.min([vy_L - c_L, vy_R - c_R, np.zeros_like(vy_L)], axis=0)
@@ -118,10 +118,14 @@ def compute_hll_flux(U_L, U_R, axis, gamma=1.4):
 
         F_HLL = np.zeros_like(U_L)
 
-        F_L = compute_F(rho_L, vy_L, P_R, gamma).T
-        F_R = compute_F(rho_L, vy_L, P_L, gamma).T
+        F_L = compute_F(rho_L, vy_L, P_R, gamma).transpose((2, 0, 1))
+        F_R = compute_F(rho_L, vy_L, P_L, gamma).transpose((2, 0, 1))
 
-    F_HLL = ((S_R * F_L - S_L * F_R + S_L * S_R * (U_R.T - U_L.T)) / (S_R - S_L)).T
+    F_HLL = ((F_L * S_R - F_R * S_L + (U_R - U_L).transpose((2, 0, 1)) * S_L * S_R) / (S_R - S_L)).transpose(1, 2, 0)
+
+    if np.any(np.isnan(F_HLL)):
+        print('end of hll')
+        exit()
 
     return F_HLL
 
@@ -146,31 +150,48 @@ def compute_L(U, nx, ny, dx, dy, gamma=1.4, theta=1.5):
     Ux_Lx[2:nx-2, :, :] = construct_U(rho_Lx[2:nx-2, :], vx_Lx[2:nx-2, :], vy_Lx[2:nx-2, :], P_Lx[2:nx-2, :])
     Ux_Rx[2:nx-2, :, :] = construct_U(rho_Rx[2:nx-2, :], vx_Rx[2:nx-2, :], vy_Lx[2:nx-2, :], P_Rx[2:nx-2, :])
 
-    F = np.zeros((nx + 1, ny, 3))
+    F = np.zeros((nx + 1, ny, 4))
     F[2:nx-2, :, :] = compute_hll_flux(Ux_Lx[2:nx-2, :, :], Ux_Rx[2:nx-2, :, :], 'x', gamma)
+    
+    if np.any(np.isnan(F)):
+        print('end of L compute')
+        exit()
 
     #Get G
-    Ux_Ly = np.zeros((nx, ny + 1, 3))
-    Ux_Ry = np.zeros((nx, ny + 1, 3))
+    Ux_Ly = np.zeros((nx, ny + 1, 4))
+    Ux_Ry = np.zeros((nx, ny + 1, 4))
 
     Ux_Ly[:, 2:ny-2, :] = construct_U(rho_Ly[:, 2:ny-2], vx_Ly[:, 2:ny-2], vy_Ly[:, 2:ny-2], P_Ly[:, 2:ny-2])
     Ux_Ry[:, 2:ny-2, :] = construct_U(rho_Ry[:, 2:ny-2], vx_Ry[:, 2:ny-2], vy_Ly[:, 2:ny-2], P_Ry[:, 2:ny-2])
 
-    G = np.zeros((nx, ny + 1, 3))
-    G[:, 2:ny-2, :] = compute_hll_flux(Ux_Ly[:, 2:nx-2, :], Ux_Ry[:, 2:ny-2, :], 'y', gamma)
+    G = np.zeros((nx, ny + 1, 4))
+    G[:, 2:ny-2, :] = compute_hll_flux(Ux_Ly[:, 2:ny-2, :], Ux_Ry[:, 2:ny-2, :], 'y', gamma)
 
-    L[3:nx-3, 3:ny-3:, :] = - (F[3:nx-3, :, :] - F[2:nx-4, :, :]) / dx - (G[:, 3:ny-3, :] - G[:, 2:ny-4, :]) / dy
+    if np.any(np.isnan(G)):
+        print('end of G')
+        exit()
+
+    L[3:nx-3, 3:ny-3:, :] = - (F[3:nx-3, 3:ny-3, :] - F[2:nx-4, 3:ny-3, :]) / dx - (G[3:nx-3, 3:ny-3, :] - G[3:nx-3, 2:ny-4, :]) / dy
  
+    if np.any(np.isnan(L)):
+        print('end of L compute')
+        exit()
     return L
 
 def apply_boundary_conditions(U):
     """
     Apply periodic boundary conditions in both directions.
     """
-    U[0, :, :] = U[-2, :, :]
-    U[-1, :, :] = U[1, :, :]
-    U[:, 0, :] = U[:, -2, :]
-    U[:, -1, :] = U[:, 1, :]
+    U[0, :, :] = U[3, :, :]
+    U[1, :, :] = U[2, :, :]
+    U[-1, :, :] = U[-4, :, :]
+    U[-2, :, :] = U[-3, :, :]
+
+    U[:, 0, :] = U[:, 3, :]
+    U[:, 1, :] = U[:, 2, :]
+    U[:, -1, :] = U[:, -4, :]
+    U[:, -2, :] = U[:, -3, :]
+
     return U
 
 def shu_osher(U, dt, dx, dy, nx, ny, gamma=1.4, theta=1.5):
@@ -182,15 +203,27 @@ def shu_osher(U, dt, dx, dy, nx, ny, gamma=1.4, theta=1.5):
     U1 = U + dt * L1
     U1 = apply_boundary_conditions(U1)
 
+    if np.any(np.isnan(U1)):
+        print('shu osher 1')
+        exit()
+
     # Stage 2
     L2 = compute_L(U1, nx, ny, dx, dy, gamma, theta)
     U2 = 0.75 * U + 0.25 * (U1 + dt * L2)
     U2 = apply_boundary_conditions(U2)
 
+    if np.any(np.isnan(U1)):
+        print('shu osher 2')
+        exit()
+
     # Stage 3
     L3 = compute_L(U2, nx, ny, dx, dy, gamma, theta)
     U_new = (1.0 / 3.0) * U + (2.0 / 3.0) * (U2 + dt * L3)
     U_new = apply_boundary_conditions(U_new)
+
+    if np.any(np.isnan(U_new)):
+        print('shu osher 3')
+        exit()
 
     return U_new
 
@@ -257,7 +290,8 @@ def evolve(U, t, dx, dy, nx, ny, gamma=1.4, cfl=0.5, theta=1.5):
 
     for i in range(1, t.size):
         U[i] = step(U[i-1], dt=1., dx=1., dy=1., nx=nx + 4, ny=ny + 4) #Divide out dt and dx from time step & cell length to make them dimensionless
-        # print(f"t = {t[i]:.4f} s")
+        print(t[i])
+        print(np.any(np.isnan(U)))
 
     end_time = time.time()
     print(f"Simulation completed in {end_time - start_time:.2f} seconds.")

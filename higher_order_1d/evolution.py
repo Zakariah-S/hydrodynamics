@@ -1,7 +1,6 @@
 """
 Module with functions that guide the evolution of the 1-D fluid system, with lower-order errors.
 """
-
 import numpy as np
 import time
 

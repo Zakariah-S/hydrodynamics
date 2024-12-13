@@ -12,14 +12,20 @@ def sod_shock(x_start, x_end, y_start, y_end, t_final, nx, ny, nt, savename = No
     v = np.zeros((nx, ny))
     P = np.zeros((nx, ny))
 
-    rho[x <= 0.5] = 10. #left side density
-    rho[x > 0.5] = 1. #right side density
-    P[x <= 0.5] = 8. #left side density
-    P[x > 0.5] = 1. #right side density
+    rho[x <= 0.5, :] = 10. #left side density
+    rho[x > 0.5, :] = 1. #right side density
+    P[x <= 0.5, :] = 8. #left side density
+    P[x > 0.5, :] = 1. #right side density
 
     U, t, x, y = initialize(x, y, t_final, nt, rho, v, P)
+    print(x.size)
     U = evolve(U, t, x[1] - x[0], y[1] - y[0], nx, ny)
-    if savename: save_data(savename, U, x, y, t)
+    if savename: 
+        print(x)
+        print(y)
+        print(x.size)
+        print(y.size)
+        save_data(savename, U, x, y, t)
 
 if __name__ == '__main__':
     sod_shock(x_start=0.,
@@ -27,8 +33,10 @@ if __name__ == '__main__':
             y_start=0.,
             y_end = 1.,
             t_final = 0.4,    #time we record until (starting time is 0 s)
-            nx = 200,         #number of positions along x that we track
-            ny = 200,         #number of positions along y that we track
+            nx = 50,         #number of positions along x that we track
+            ny = 50,         #number of positions along y that we track
             nt = 40,          #number of time steps we take over the interval t_final - 0s
-            savename='testsodshock200x200')   #name of file we save data to (will have an .npz appended to it)
-    pass
+            savename='testsodshock50x50')   #name of file we save data to (will have an .npz appended to it)
+    # pass
+
+    animate_from_file("testsodshock10x10.npz")

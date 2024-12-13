@@ -26,7 +26,7 @@ def plot_one_time(infile, frame):
     plt.tight_layout()
     plt.show()
 
-def save_data(savename, U, x, y, t, gamma=1.4):
+def save_data(savename, U, x, t, gamma=1.4):
     # Extract variables for plotting
     rho = U[:, :, 0]
     rho_v = U[:, :, 1]
@@ -35,12 +35,11 @@ def save_data(savename, U, x, y, t, gamma=1.4):
 
     # Exclude ghost cells
     x = x[2:-2]
-    y = y[-2:2]
     rho = rho[:, 2:-2]
     v = v[:, 2:-2]
     p = p[:, 2:-2]
 
-    np.savez_compressed(savename, t=t, x=x, y=y, rho=rho, v=v, p=p)
+    np.savez_compressed(savename, t=t, x=x, rho=rho, v=v, p=p)
 
 def load_data(infile):
     loaded = np.load(infile, mmap_mode='r')
