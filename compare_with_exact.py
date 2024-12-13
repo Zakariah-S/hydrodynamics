@@ -82,6 +82,6 @@ def plot_both():
     fig.suptitle("             X-Averaged Absolute Residuals of the Sod Shock Simulation")
 
     plt.tight_layout()
-    plt.savefig("avgresids_both.eps", format='eps')
+    plt.savefig("Figures/avgresids_both.eps", format='eps')
     plt.show()
 plot_both()
