@@ -28,16 +28,10 @@ def plot_one_time(infile, frame):
 
 def save_data(savename, U, x, t, gamma=1.4):
     # Extract variables for plotting
-    rho = U[:, :, 0]
-    rho_v = U[:, :, 1]
+    rho = U[:, 0]
+    rho_v = U[:, 1]
     v = rho_v / rho
-    p = (gamma - 1) * (U[:, :, 2] - 0.5 * rho * v ** 2)
-
-    # Exclude ghost cells
-    x = x[2:-2]
-    rho = rho[:, 2:-2]
-    v = v[:, 2:-2]
-    p = p[:, 2:-2]
+    p = (gamma - 1) * (U[:, 2] - 0.5 * rho * v ** 2)
 
     np.savez_compressed(savename, t=t, x=x, rho=rho, v=v, p=p)
 
