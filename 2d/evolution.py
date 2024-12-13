@@ -63,6 +63,25 @@ def deconstruct_U(U, gamma=1.4):
     vx = U[:, :, 1] / U[:, :, 0]
     vy = U[:, :, 2] / U[:, :, 0]
     P = (gamma - 1) * (U[:, :, 3] - 0.5 * (np.square(U[:, :, 1]) + np.square(U[:, :, 2])) / U[:, :, 0])
+
+    print(rho)
+    print(vx)
+    print(vy)
+
+    if np.any(np.isnan(rho)):
+        print('rho')
+        exit()
+
+    if np.any(np.isnan(vx)):
+        print('vx')
+        exit()
+
+    if np.any(np.isnan(vy)):
+        print('vy')
+        exit()
+    if np.any(np.isnan(P)):
+        print('P')
+        exit()
     return rho, vx, vy, P
 
 def compute_F(rho, vx, vy, P, gamma=1.4):
@@ -91,6 +110,7 @@ def compute_hll_flux(U_L, U_R, axis, gamma=1.4):
     """
     Compute HLL flux at an interface given left and right states.
     """
+    print("beginnign of fhll")
     rho_L, vx_L, vy_L, P_L = deconstruct_U(U_L)
     rho_R, vx_R, vy_R, P_R = deconstruct_U(U_R)
 
@@ -109,8 +129,8 @@ def compute_hll_flux(U_L, U_R, axis, gamma=1.4):
 
         F_HLL = np.zeros_like(U_L)
 
-        F_L = compute_F(rho_L, vx_L, P_R, gamma).transpose((2, 0, 1))
-        F_R = compute_F(rho_L, vx_L, P_L, gamma).transpose((2, 0, 1))
+        F_L = compute_F(rho_L, vx_L, P_R, gamma)
+        F_R = compute_F(rho_L, vx_L, P_L, gamma)
 
     elif axis == 'y':
         S_L = np.min([vy_L - c_L, vy_R - c_R, np.zeros_like(vy_L)], axis=0)
@@ -118,10 +138,11 @@ def compute_hll_flux(U_L, U_R, axis, gamma=1.4):
 
         F_HLL = np.zeros_like(U_L)
 
-        F_L = compute_F(rho_L, vy_L, P_R, gamma).transpose((2, 0, 1))
-        F_R = compute_F(rho_L, vy_L, P_L, gamma).transpose((2, 0, 1))
+        F_L = compute_F(rho_L, vy_L, P_R, gamma)
+        F_R = compute_F(rho_L, vy_L, P_L, gamma)
 
-    F_HLL = ((F_L * S_R - F_R * S_L + (U_R - U_L).transpose((2, 0, 1)) * S_L * S_R) / (S_R - S_L)).transpose(1, 2, 0)
+    for i in np.arange(3):
+        F_HLL[:, :, i] = ((F_L[:, :, i] * S_R - F_R[:, :, i] * S_L + (U_R - U_L)[:, :, i] * S_L * S_R) / (S_R - S_L))
 
     if np.any(np.isnan(F_HLL)):
         print('end of hll')
@@ -135,6 +156,7 @@ def compute_L(U, nx, ny, dx, dy, gamma=1.4, theta=1.5):
     """
     L = np.zeros_like(U)
 
+    print("beginning of L")
     rho, vx, vy, P = deconstruct_U(U)
 
     # Reconstruct variables
@@ -231,6 +253,7 @@ def compute_time_step(U, dx, cfl, gamma):
     """
     Compute time step size dt based on CFL condition.
     """
+    print("time")
     rho, vx, vy, P = deconstruct_U(U)
 
     # Apply pressure and density floors
@@ -291,7 +314,6 @@ def evolve(U, t, dx, dy, nx, ny, gamma=1.4, cfl=0.5, theta=1.5):
     for i in range(1, t.size):
         U[i] = step(U[i-1], dt=1., dx=1., dy=1., nx=nx + 4, ny=ny + 4) #Divide out dt and dx from time step & cell length to make them dimensionless
         print(t[i])
-        print(np.any(np.isnan(U)))
 
     end_time = time.time()
     print(f"Simulation completed in {end_time - start_time:.2f} seconds.")

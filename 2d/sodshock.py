@@ -18,13 +18,8 @@ def sod_shock(x_start, x_end, y_start, y_end, t_final, nx, ny, nt, savename = No
     P[x > 0.5, :] = 1. #right side density
 
     U, t, x, y = initialize(x, y, t_final, nt, rho, v, P)
-    print(x.size)
     U = evolve(U, t, x[1] - x[0], y[1] - y[0], nx, ny)
-    if savename: 
-        print(x)
-        print(y)
-        print(x.size)
-        print(y.size)
+    if savename:
         save_data(savename, U, x, y, t)
 
 if __name__ == '__main__':
