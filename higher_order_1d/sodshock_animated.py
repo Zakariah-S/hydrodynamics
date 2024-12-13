@@ -35,9 +35,9 @@ sod_shock(x_start = 0.,
           nt = 40,
           savename=f"testsodshock{cells}")
 
-# compare_files('sodshock200.npz', 'testsodshock200.npz')
-# animate_from_file(f"testsodshock{cells}.npz")
-# animate_from_file('testsodshock800.npz')
+
+animate_from_file(f"testsodshock{cells}.npz")
+
 
 
 
