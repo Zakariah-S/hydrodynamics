@@ -17,7 +17,7 @@ def initialize(x, y, t_final, steps, rho, v, p, gamma=1.4, theta=1.5, cfl=0.5):
     p_expand[2:-2,2:-2] = p
 
     #Initialize U
-    U = np.zeros((steps + 1, x_expand.size, y_expand.size, 3))
+    U = np.zeros((steps + 1, x_expand.size, y_expand.size, 4))
     U[0, :, :, 0] = rho_expand
     U[0, :, :, 1] = rho_expand * v_expand
     U[0, :, :, 2] = p_expand / (gamma - 1) + 0.5 * rho_expand * v_expand ** 2
