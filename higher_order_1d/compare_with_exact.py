@@ -25,5 +25,6 @@ if __name__ == '__main__':
     # t, x, rho, v, p = load_data("sodshock800.npz")
     # animate(t, x, np.abs(rho - rho_e) / rho_e, np.abs(v - v_e), np.abs(p - p_e) / p_e)
 
-    residuals_animation("testsodshock.npz", '../exactsodshock1d/exactsodshock800.npz', legend1='Simulation', legend2='Exact')
+    # residuals_animation("testsodshock800.npz", '../exactsodshock1d/exactsodshock800.npz', legend1='Simulation', legend2='Exact')
+    
     residuals_animation("sodshock800.npz", '../exactsodshock1d/exactsodshock800.npz', legend1='Simulation', legend2='Exact')
