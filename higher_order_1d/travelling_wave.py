@@ -12,26 +12,28 @@ def sod_shock(x_start, x_end, t_final, nx, nt, savename = None):
     v = np.zeros(nx)
     P = np.zeros(nx)
 
-    rho[x <= 0.5] = 10. #left side density
-    rho[x > 0.5] = 1. #right side density
-    P[x <= 0.5] = 8. #left side density
-    P[x > 0.5] = 1. #right side density
+    # rho[:] = 1.
+    # rho[3 * nx // 8:5*nx //8] = 100.
+    # P[:] = 1.
+    # P[3 * nx // 8:5*nx //8] = 100.
+    
+    rho = 3. + np.sin(8 * np.pi * x)
+    P = 4. + np.sin(8 * np.pi * x)
 
     U, t, x = initialize(x, t_final, nt, rho, v, P)
     U = evolve(U, t, x[1] - x[0], nx)
     if savename: save_data(savename, U, x, t)
 
 if __name__ == '__main__':
-    # sod_shock(x_start=0.,       #left side of tube
-    #         x_end = 1.,       #right side of tube
-    #         t_final = 0.4,    #time we record until (starting time is 0 s)
-    #         nx = 800,         #number of positions we track
-    #         nt = 40,          #number of time steps we take over the interval t_final - 0s
-    #         savename='testsodshock800')   #name of file we save data to (will have '.npz' appended to it)
-    
-    # animate_from_file("testsodshock800.npz")
-    # residuals_animation("testsodshock800.npz", "sodshock800.npz")
-    # residuals_animation("sodshock800.npz", "../exactsodshock1d/exactsodshock800.npz")
+    sod_shock(x_start=0.,       #left side of tube
+            x_end = 1.,       #right side of tube
+            t_final = 1.,    #time we record until (starting time is 0 s)
+            nx = 800,         #number of positions we track
+            nt = 100,          #number of time steps we take over the interval t_final - 0s
+            savename='wave',   #name of file we save data to (will have an .npz appended to it)
+    )
+
+    animate_from_file("wave.npz", interval=100)
 
     # animate_from_file("testsodshock200.npz")
     # sod_shock(x_start=0.,       #left side of tube
@@ -59,4 +61,3 @@ if __name__ == '__main__':
     #           nx = cells,
     #           nt = 40,
     #           savename=f"testsodshock{cells}")
-    pass

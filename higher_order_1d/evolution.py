@@ -23,16 +23,27 @@ def get_left_and_right_states(c, theta):
     c_R = np.zeros(c.size + 1)
     sigma = np.zeros_like(c)
 
-    #sigma is 0 at the edge cells because of no-slip boundary conditions
+    #sigma cannot be defined as below at the edge cells, so we define it (and thus c_L and c_R) for these using our boundary conditions
     sigma[1:-1] = 0.5 * minmod(theta * (c[1:-1] - c[:-2]),
                                0.5 * (c[2:] - c[:-2]),
                                theta * (c[2:] - c[1:-1]))
     
+    #For no-slip boundary conditions
     c_L[1:] = c + 0.5 * sigma
     c_L[0] = c[0]
 
     c_R[:-1] = c - 0.5 * sigma
     c_R[-1] = c[-1]
+
+    # #For periodic boundary conditions
+    # sigma[0] = 0.5 * minmod(theta * (c[0] - c[-1]), 0.5 * (c[1] - c[-1]), theta * (c[1] - c[0]))
+    # sigma[-1] = sigma[0]
+
+    # c_L[1:] = c + 0.5 * sigma
+    # c_L[0] = c[-1]
+
+    # c_R[:-1] = c - 0.5 * sigma
+    # c_R[-1] = c_R[0]
 
     return c_L, c_R
 
@@ -185,7 +196,7 @@ def evolve(U, t, dx, nx, gamma=1.4, cfl=0.5, theta=1.5):
     norms = np.array([n0, n1, n2])
 
     #Divide out the constants
-    U[0] = (U[0].T / norms).T
+    U[0] = U[0] / norms[:,None]
 
     for i in range(1, t.size):
         U[i] = step(U[i-1], dt=1., dx=1., nx=nx) #Divide out dt and dx from time step & cell length to make them dimensionless

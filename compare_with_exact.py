@@ -69,17 +69,18 @@ def plot_both():
             axs[1].legend(loc='upper left')
                 
             if j == 0: 
-                if i == 0: axs[0].set_ylabel("Density Residuals")
-                if i == 1: axs[0].set_ylabel("Velocity Residuals")
-                if i == 2: axs[0].set_ylabel("Pressure Residuals")
+                if i == 0: axs[0].set_ylabel("Density Residuals ($kg~m^{-3}$)")
+                if i == 1: axs[0].set_ylabel("Velocity Residuals ($m~s^{-1}$)")
+                if i == 2: axs[0].set_ylabel("Pressure Residuals ($Pa$)")
             if i == 0 and j == 1: 
                 axs[0].set_title("Low-Order")
                 axs[1].set_title("High-Order")
-            if i == 2 and j == 1: 
-                axs[0].set_xlabel("t")
-                axs[1].set_xlabel("t")
+            # if i == 2 and j == 1: 
+            #     axs[0].set_xlabel("t")
+            #     axs[1].set_xlabel("t")
 
-    fig.suptitle("             X-Averaged Absolute Residuals of the Sod Shock Simulation")
+    fig.supxlabel("t (s)")
+    fig.suptitle("             X-Averaged Absolute Residuals of the Sod Shock Simulation", fontweight='bold')
 
     plt.tight_layout()
     plt.savefig("Figures/avgresids_both.eps", format='eps')

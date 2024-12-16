@@ -23,15 +23,10 @@ def plot_3D(x, y, data, title="", xlabel="", ylabel="", zlabel=""):
 
 def save_data(savename, U, x, y, t, gamma=1.4):
     # Extract variables for plotting
-    U = U[:, 2:-2, 2:-2, :]
-    rho = U[:, :, :, 0]
-    vx = U[:, :, :, 1] / U[:, :, :, 0]
-    vy = U[:, :, :, 2] / U[:, :, :, 0]
-    p = (gamma - 1) * (U[:, :, :, 2] - 0.5 * rho * (np.square(vx) + np.square(vy)))
-
-    # Exclude ghost cells
-    x = x[2:-2]
-    y = y[2:-2]
+    rho = U[:, 0, :, :]
+    vx = U[:, 1, :, :] / U[:, 0, :, :]
+    vy = U[:, 2, :, :] / U[:, 0, :, :]
+    p = (gamma - 1) * (U[:, 3, :, :] - 0.5 * rho * (np.square(vx) + np.square(vy)))
 
     np.savez_compressed(savename, t=t, x=x, y=y, rho=rho, vx=vx, vy=vy, p=p)
 
