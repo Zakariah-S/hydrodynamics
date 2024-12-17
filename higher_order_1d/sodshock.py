@@ -4,6 +4,9 @@ from output import *
 import numpy as np
 import sys
 
+"""
+Recommended: no-slip boundary conditions. You can change this by editing the evolution.py file.
+"""
 def sod_shock(x_start, x_end, t_final, nx, nt, savename = None):
     # Initialize independent and dependent variables
 
@@ -22,14 +25,14 @@ def sod_shock(x_start, x_end, t_final, nx, nt, savename = None):
     if savename: save_data(savename, U, x, t)
 
 if __name__ == '__main__':
-    # sod_shock(x_start=0.,       #left side of tube
-    #         x_end = 1.,       #right side of tube
-    #         t_final = 0.4,    #time we record until (starting time is 0 s)
-    #         nx = 800,         #number of positions we track
-    #         nt = 40,          #number of time steps we take over the interval t_final - 0s
-    #         savename='testsodshock800')   #name of file we save data to (will have '.npz' appended to it)
+    sod_shock(x_start=0.,       #left side of tube
+            x_end = 1.,       #right side of tube
+            t_final = 0.4,    #time we record until (starting time is 0 s)
+            nx = 400,         #number of positions we track
+            nt = 40,          #number of time steps we take over the interval t_final - 0s
+            savename='testsodshock400')   #name of file we save data to (will have '.npz' appended to it)
     
-    # animate_from_file("testsodshock800.npz")
+    animate_from_file("testsodshock400.npz", savename=None)
     # residuals_animation("testsodshock800.npz", "sodshock800.npz")
     # residuals_animation("sodshock800.npz", "../exactsodshock1d/exactsodshock800.npz")
 

@@ -15,9 +15,10 @@ def minmod(a, b, c):
     result = 0.25 * np.abs(sgn_a + sgn_b) * (sgn_a + sgn_c) * min_abs
     return result
 
-def get_left_and_right_states(c, theta):
+def get_left_and_right_states(c, theta, vel=False):
     """
     Reconstruct left and right states at cell interfaces using minmod limiter.
+    If current variable is velocity and we're using reflective boundary conditions, reverse sign of v at edges of cell.
     """
     c_L = np.zeros(c.size + 1)
     c_R = np.zeros(c.size + 1)
@@ -28,22 +29,41 @@ def get_left_and_right_states(c, theta):
                                0.5 * (c[2:] - c[:-2]),
                                theta * (c[2:] - c[1:-1]))
     
-    #For no-slip boundary conditions
-    c_L[1:] = c + 0.5 * sigma
-    c_L[0] = c[0]
-
-    c_R[:-1] = c - 0.5 * sigma
-    c_R[-1] = c[-1]
-
-    # #For periodic boundary conditions
-    # sigma[0] = 0.5 * minmod(theta * (c[0] - c[-1]), 0.5 * (c[1] - c[-1]), theta * (c[1] - c[0]))
-    # sigma[-1] = sigma[0]
-
+    #-----For no-slip boundary conditions
     # c_L[1:] = c + 0.5 * sigma
-    # c_L[0] = c[-1]
+    # c_L[0] = c[0]
 
     # c_R[:-1] = c - 0.5 * sigma
-    # c_R[-1] = c_R[0]
+    # c_R[-1] = c[-1]
+
+    # -----For periodic boundary conditions
+    # c_L[1:-1] = c[:-1] + 0.5 * sigma[:-1]
+    # c_L[0] = c_L[-2]
+    # c_L[-1] = c_L[1]
+
+    # c_R[1:-1] = c[1:] - 0.5 * sigma[1:]
+    # c_R[0] = c_R[-2]
+    # c_R[-1] = c_R[1]
+
+    #-----For reflective boundary conditions
+    if vel:
+        c_new = np.zeros(c.size + 4, dtype=np.float64)
+        c_new[2:-2] = c
+        c[0] = -c[3]
+        c[1] = -c[2]
+        c[-1] = -c[-4]
+        c[-2] = -c[-3]
+        sigma = np.zeros(c.size + 2)
+        sigma = 0.5 * minmod(theta * (c_new[1:-1] - c_new[:-2]),
+                               0.5 * (c_new[2:] - c_new[:-2]),
+                               theta * (c_new[2:] - c_new[1:-1]))
+        c_L = c_new[1:-2] + 0.5 * sigma[:-1]
+        c_R = c_new[2:-1] - 0.5 * sigma[1:]
+    else:
+        c_L[1:] = c + 0.5 * sigma
+        c_L[0] = c[0]
+        c_R[:-1] = c - 0.5 * sigma
+        c_R[-1] = c[-1]
 
     return c_L, c_R
 
@@ -111,7 +131,7 @@ def compute_L(U, nx, dx, gamma, theta):
 
     # Reconstruct variables
     rho_L, rho_R = get_left_and_right_states(rho, theta)
-    v_L, v_R = get_left_and_right_states(v, theta)
+    v_L, v_R = get_left_and_right_states(v, theta, vel = True)
     P_L, P_R = get_left_and_right_states(P, theta)
 
     U_L = construct_U(rho_L, v_L, P_L)

@@ -44,15 +44,18 @@ def load_data(infile):
     p = loaded['p']
     return t, x, rho, v, p
 
-def animate(t, x, rho, v, p, title='Sod Shock Simulation Results', interval=50):
+def animate_from_file(infile, savename, title='Sod Shock Simulation Results', interval=50, fps=15):
     import matplotlib.animation as mani
+    t, x, rho, v, p = load_data(infile)
+
     # Plot results
     fig = plt.figure(figsize=(12, 8))
 
     fig.add_subplot(3, 1, 1)
     density, = plt.plot(x, rho[0])
     plt.xlim(x[0], x[-1])
-    plt.ylim(np.min(rho) - 0.5, np.max(rho) + 0.5)
+    height = np.max(rho) - np.min(rho)
+    plt.ylim(np.min(rho) - 0.5*height, np.max(rho) + 0.5*height)
     plt.title(title)
     plt.ylabel('Density')
     time_text = plt.annotate('t = 0 s', xy=(0.93, 0.9), xycoords='axes fraction', xytext=(0., 2.), textcoords='offset fontsize')
@@ -60,13 +63,15 @@ def animate(t, x, rho, v, p, title='Sod Shock Simulation Results', interval=50):
     fig.add_subplot(3, 1, 2)
     vel, = plt.plot(x, v[0], color='green')
     plt.xlim(x[0], x[-1])
-    plt.ylim(np.min(v) - 0.5, np.max(v) + 0.5)
+    height = np.max(v) - np.min(v)
+    plt.ylim(np.min(v) - 0.5*height, np.max(v) + 0.5*height)
     plt.ylabel('Velocity')
 
     fig.add_subplot(3, 1, 3)
     pressure, = plt.plot(x, p[0], color='red')
     plt.xlim(x[0], x[-1])
-    plt.ylim(np.min(p) - 0.5, np.max(p) + 0.5)
+    height = np.max(p) - np.min(p)
+    plt.ylim(np.min(p) - 0.5*height, np.max(p) + 0.5*height)
     plt.xlabel('Position x')
     plt.ylabel('Pressure')
 
@@ -79,13 +84,15 @@ def animate(t, x, rho, v, p, title='Sod Shock Simulation Results', interval=50):
         time_text.set_text(f't = {np.round(t[frame], 2):.2f} s')
         return density, vel, pressure, time_text
 
-    ani = mani.FuncAnimation(fig=fig, func=update, frames=range(1, t.size), interval=interval)
+    if savename:
+        ani = mani.FuncAnimation(fig=fig, func=update, frames=range(1, t.size), interval=interval)
+
+        writer = mani.PillowWriter(fps=fps,
+                                        metadata=dict(artist='Me'),
+                                        bitrate=1800)
+        ani.save(savename, writer=writer)
 
     plt.show()
-
-def animate_from_file(infile, title='Sod Shock Simulation Results', interval=50):
-    t, x, rho, v, p = load_data(infile)
-    animate(t, x, rho, v, p, title, interval=interval)
 
 def residuals_animation(infile1, infile2, title='Sod Shock Simulation Residuals', legend1='1', legend2='2'):
     import matplotlib.animation as mani
