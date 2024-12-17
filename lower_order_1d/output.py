@@ -59,35 +59,43 @@ def animate_from_file(infile, savename, title='Sod Shock Simulation Results', in
     #Initialise figure
     fig = plt.figure(figsize=(12, 8))
 
-    fig.add_subplot(3, 1, 1)
+    fig.add_subplot(2, 2, 1)
     density, = plt.plot(x, rho[0])
     plt.xlim(x[0], x[-1])
     plt.ylim(np.min(rho) - 0.5, np.max(rho) + 0.5)
-    plt.title(title)
+    fig.suptitle(title)
     plt.ylabel('Density')
-    time_text = plt.annotate('t = 0 s', xy=(0.93, 0.9), xycoords='axes fraction', xytext=(0., 2.), textcoords='offset fontsize')
 
-    fig.add_subplot(3, 1, 2)
+    fig.add_subplot(2, 2, 2)
     vel, = plt.plot(x, v[0], color='green')
     plt.xlim(x[0], x[-1])
     plt.ylim(np.min(v) - 0.5, np.max(v) + 0.5)
     plt.ylabel('Velocity')
+    time_text = plt.annotate('t = 0 s', xy=(0.85, 0.95), xycoords='axes fraction', xytext=(0., 2.), textcoords='offset fontsize')
 
-    fig.add_subplot(3, 1, 3)
+    fig.add_subplot(2, 2, 3)
     pressure, = plt.plot(x, p[0], color='red')
     plt.xlim(x[0], x[-1])
     plt.ylim(np.min(p) - 0.5, np.max(p) + 0.5)
     plt.xlabel('Position x')
     plt.ylabel('Pressure')
 
+    fig.add_subplot(2, 2, 4)
+    E = p/(1.4 - 1) + 0.5 * rho * np.square(v)
+    energy, = plt.plot(x, E[0], color='purple')
+    plt.xlim(x[0], x[-1])
+    plt.ylim(np.min(E) - 0.5, np.max(E) + 0.5)
+    plt.xlabel('Position x')
+    plt.ylabel('Energy')
+
     plt.tight_layout()
-    plt.savefig("../Figures/test1dho800_firstframe.png", dpi=400)
 
     #Update function to pass to animator
     def update(frame):
         density.set_data(x, rho[frame])
         vel.set_data(x, v[frame])
         pressure.set_data(x, p[frame])
+        energy.set_data(x, E[frame])
         time_text.set_text(f't = {np.round(t[frame], 2):.2f} s')
         return density, vel, pressure, time_text
 

@@ -24,14 +24,14 @@ def sod_shock(cells, x_start, x_end, t_final, t_steps, savename=None):
     U = evolve(U, F, t, dx)
     if savename: save_data(savename, U, x, t)
 
-sod_shock(cells = 800,
-          x_start = 0.,
-          x_end = 1.,
-          t_final = 0.4,
-          t_steps = 40,
-          savename=None)
+# sod_shock(cells = 800,
+#           x_start = 0.,
+#           x_end = 1.,
+#           t_final = 0.4,
+#           t_steps = 40,
+#           savename=None)
 
-# animate_from_file("testsodshock261.npz", savename=None)
+animate_from_file("../exactsodshock1d/exactsodshock800.npz", savename="../Animations/exactsodshockwenergy.gif")
 
 # # Default parameters
 # default_cells = 400
