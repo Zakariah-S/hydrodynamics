@@ -116,10 +116,18 @@ def apply_boundary_conditions(U):
     Apply boundary conditions to U.
     """
     # Reflective boundary conditions
-    U[0, :] = U[3, :]
-    U[1, :] = U[2, :]
-    U[-1, :] = U[-4, :]
-    U[-2, :] = U[-3, :]
+    # U[0, :] = U[3, :]
+    # U[1, :] = U[2, :]
+    # U[-1, :] = U[-4, :]
+    # U[-2, :] = U[-3, :]
+
+    #Periodic boundary conditions
+    U[-3, :] = U[2, :]
+    U[-2, :] = U[3, :]
+    U[-1, :] = U[4, :]
+    U[1, :] = U[-4, :]
+    U[0, :] = U[-5, :]
+
     return U
 
 def shu_osher(U, nx, dx, dt, gamma, theta):

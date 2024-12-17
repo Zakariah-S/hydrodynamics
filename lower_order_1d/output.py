@@ -50,9 +50,13 @@ def load_data(infile):
     p = loaded['p']
     return t, x, rho, v, p
 
-def animate(t, x, rho, v, p, title='Sod Shock Simulation Results', interval=50):
+def animate_from_file(infile, savename, title='Sod Shock Simulation Results', interval=50, fps=15):
     import matplotlib.animation as mani
-    # Plot results
+
+    #Get data
+    t, x, rho, v, p = load_data(infile)
+
+    #Initialise figure
     fig = plt.figure(figsize=(12, 8))
 
     fig.add_subplot(3, 1, 1)
@@ -77,7 +81,9 @@ def animate(t, x, rho, v, p, title='Sod Shock Simulation Results', interval=50):
     plt.ylabel('Pressure')
 
     plt.tight_layout()
+    plt.savefig("../Figures/test1dho800_firstframe.png", dpi=400)
 
+    #Update function to pass to animator
     def update(frame):
         density.set_data(x, rho[frame])
         vel.set_data(x, v[frame])
@@ -87,13 +93,18 @@ def animate(t, x, rho, v, p, title='Sod Shock Simulation Results', interval=50):
 
     ani = mani.FuncAnimation(fig=fig, func=update, frames=range(1, t.size), interval=interval)
 
+    #Save animation
+    if savename:
+        writer = mani.PillowWriter(fps=fps,
+                                    metadata=dict(artist='Me'),
+                                    bitrate=1800)
+        ani.save(savename, writer=writer)
+
     plt.show()
 
-def animate_from_file(infile, title='Sod Shock Simulation Results', interval=50):
-    t, x, rho, v, p = load_data(infile)
-    animate(t, x, rho, v, p, title, interval=interval)
+    return ani
 
-def residuals_animation(infile1, infile2, title='Sod Shock Simulation Residuals', legend1='1', legend2='2'):
+def residuals_animation(infile1, infile2, savename, title='Sod Shock Simulation Residuals', legend1='1', legend2='2', interval=50, fps=15):
     import matplotlib.animation as mani
 
     t, x, rho1, v1, p1 = load_data(infile1)
@@ -125,7 +136,6 @@ def residuals_animation(infile1, infile2, title='Sod Shock Simulation Residuals'
     plt.ylabel('Velocity')
     plt.legend()
     plt.xticks(c='white')
-
 
     fig.add_subplot(2, 3, 3)
     pres1, = plt.plot(x, p1[0], label=legend1)
@@ -175,8 +185,18 @@ def residuals_animation(infile1, infile2, title='Sod Shock Simulation Residuals'
 
         return dens1, dens2, dens_resid, vel1, vel2, vel_resid, pres1, pres2, pres_resid, time_text
 
-    ani = mani.FuncAnimation(fig=fig, func=update, frames=range(1, t.size), interval=50)
+    ani = mani.FuncAnimation(fig=fig, func=update, frames=range(1, t.size), interval=interval)
+
+    #Save animation
+    if savename:
+        writer = mani.PillowWriter(fps=fps,
+                                    metadata=dict(artist='Me'),
+                                    bitrate=1800)
+        ani.save(savename, writer=writer)
+
     plt.show()
+
+    return ani
 
 def compare_files(compare_file, test_file, eps=1e-10):
     #Check if data files are the same with a very small margin of error

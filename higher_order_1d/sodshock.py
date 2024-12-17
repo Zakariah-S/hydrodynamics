@@ -21,28 +21,7 @@ def sod_shock(x_start, x_end, t_final, nx, nt, savename = None):
     U = evolve(U, t, x[1] - x[0], nx)
     if savename: save_data(savename, U, x, t)
 
-
-
-# Default parameters
-default_cells = 400
-cells = int(sys.argv[1]) if len(sys.argv) > 1 else default_cells
-
-
-sod_shock(x_start = 0.,
-          x_end = 1.,
-          t_final = 0.4,
-          nx = cells,
-          nt = 40,
-          savename=f"testsodshock{cells}")
-
-# compare_files('sodshock200.npz', 'testsodshock200.npz')
-# animate_from_file(f"testsodshock{cells}.npz")
-# animate_from_file('testsodshock800.npz')
-
-
-
-
-# if __name__ == '__main__':
+if __name__ == '__main__':
     # sod_shock(x_start=0.,       #left side of tube
     #         x_end = 1.,       #right side of tube
     #         t_final = 0.4,    #time we record until (starting time is 0 s)
@@ -57,18 +36,32 @@ sod_shock(x_start = 0.,
     #           nt = 40,          #number of time steps we take over the interval t_final - 0s
     #           savename='testsodshock400')   #name of file we save data to (will have an .npz appended to it)
 
-    # sod_shock(x_start=0.,       #left side of tube
-    #           x_end = 1.,       #right side of tube
-    #           t_final = 0.4,    #time we record until (starting time is 0 s)
-    #           nx = 800,         #number of positions we track
-    #           nt = 40,          #number of time steps we take over the interval t_final - 0s
-    #           savename='testsodshock800')   #name of file we save data to (will have an .npz appended to it)
+    sod_shock(x_start=0.,       #left side of tube
+              x_end = 1.,       #right side of tube
+              t_final = 0.4,    #time we record until (starting time is 0 s)
+              nx = 800,         #number of positions we track
+              nt = 40,          #number of time steps we take over the interval t_final - 0s
+              savename='testsodshock800')   #name of file we save data to (will have an .npz appended to it)
 
-    # animate_from_file("testsodshock200.npz", interval=100)
+    # animate_from_file("testsodshock200.npz", savename = "../Animations/testho200.gif", interval=100)
+    # animate_from_file("testsodshock400.npz", savename = "../Animations/testho400.gif", interval=100)
+    animate_from_file("testsodshock800.npz", savename = None, interval=100, title="Sod Shock Setup")
 
-    compare_files("sodshock200.npz", "testsodshock200.npz")
+    # residuals_animation("testsodshock800.npz", "../exactsodshock1d/exactsodshock800.npz", savename = "../Animations/test1dho800_resids.gif", legend1="800 cells", legend2="Exact")
 
-    # residuals_animation('testsodshock200.npz', 'sodshock200.npz', legend1='test', legend2='original')
+    #For running from terminal
+    # # Default parameters
+    # default_cells = 400
+    # cells = int(sys.argv[1]) if len(sys.argv) > 1 else default_cells
 
-    # plot_one_time('sodshock200.npz', 10)
-    #pass
+    # sod_shock(x_start = 0.,
+    #           x_end = 1.,
+    #           t_final = 0.4,
+    #           nx = cells,
+    #           nt = 40,
+    #           savename=f"testsodshock{cells}")
+
+    # # compare_files('sodshock200.npz', 'testsodshock200.npz')
+    # # animate_from_file(f"testsodshock{cells}.npz")
+    # # animate_from_file('testsodshock800.npz')
+    pass

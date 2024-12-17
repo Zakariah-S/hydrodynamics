@@ -42,7 +42,9 @@ def get_alphas(rho, v, p, gamma=1.4):
 def compute_time_step(U, dx, cfl=0.5, gamma=1.4):
     #Compute time step size dt based on CFL condition.
     rho, v, p = deconstruct_U(U)
-    return cfl * dx / np.max(get_alphas(rho, v, p, gamma))
+    alpha_max = np.max(get_alphas(rho, v, p, gamma))
+    # print(alpha_max)
+    return cfl * dx / alpha_max
 
 def step(U, F, dt, dx, gamma=1.4, cfl=0.5):
     if compute_time_step(U, dx, cfl, gamma) < dt:
@@ -115,7 +117,7 @@ def evolve(U, F, t, dx, gamma=1.4, cfl=0.5):
 
     for i in range(1, t.size):
         U[i], F = step(U[i-1], F, dt=1., dx=1., gamma=gamma, cfl=cfl)
-        print(f"t = {t[i]:.4f} s")
+        # print(f"t = {t[i]:.4f} s")
 
     end_time = time.time()
     print(f"Simulation completed in {end_time - start_time:.2f} seconds.")

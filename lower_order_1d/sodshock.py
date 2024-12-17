@@ -3,8 +3,9 @@ from initialization import initialize
 from evolution import evolve
 from output import *
 import numpy as np
+import timeit
 
-def sod_shock(cells, x_start, x_end, t_final, t_steps, savename):
+def sod_shock(cells, x_start, x_end, t_final, t_steps, savename=None):
     # Initialize independent and dependent variables
     x = np.linspace(x_start, x_end, 2 * cells - 1)
     dx = x[2] - x[0]
@@ -23,18 +24,27 @@ def sod_shock(cells, x_start, x_end, t_final, t_steps, savename):
     U = evolve(U, F, t, dx)
     if savename: save_data(savename, U, x, t)
 
-
-# Default parameters
-default_cells = 400
-cells = int(sys.argv[1]) if len(sys.argv) > 1 else default_cells
-
-sod_shock(cells = cells,
+sod_shock(cells = 800,
           x_start = 0.,
           x_end = 1.,
           t_final = 0.4,
           t_steps = 40,
-          savename=f"testsodshock{cells}")
+          savename=None)
+
+# animate_from_file("testsodshock261.npz", savename=None)
+
+# # Default parameters
+# default_cells = 400
+# cells = int(sys.argv[1]) if len(sys.argv) > 1 else default_cells
+
+# sod_shock(cells = cells,
+#           x_start = 0.,
+#           x_end = 1.,
+#           t_final = 0.4,
+#           t_steps = 40,
+#           savename=f"testsodshock{cells}")
 
 # compare_files('sodshock200.npz', 'testsodshock200.npz')
 # animate_from_file(f"testsodshock{cells}.npz")
 # animate_from_file('testsodshock800.npz')
+# animate_from_file("sodshock800.npz", savename="../Animations/lo_sodshock_800.gif")

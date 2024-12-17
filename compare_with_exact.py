@@ -3,16 +3,19 @@ Compare simulation results with the exact solution.
 """
 import numpy as np
 import matplotlib.pyplot as plt
-from higher_order_1d.output import avg_resid_over_time
+from higher_order_1d.output import avg_resid_over_time, residuals_animation
 
 #-----Animate residuals over 200 grid points-----#
 # residuals_animation("higher_order_1d/testsodshock200.npz", 'exactsodshock1d/exactsodshock200.npz', legend1='Simulation', legend2='Exact')
+# residuals_animation("lower_order_1d/sodshock200.npz", 'exactsodshock1d/exactsodshock200.npz', savename= "Animations/lower_order_compare_200.gif", legend1='Simulation', legend2='Exact')
 
 #-----Animate residuals over 400 grid points-----#
 # residuals_animation("higher_order_1d/testsodshock400.npz", 'exactsodshock1d/exactsodshock400.npz', legend1='Simulation', legend2='Exact')
+# residuals_animation("lower_order_1d/sodshock400.npz", 'exactsodshock1d/exactsodshock400.npz', savename= "Animations/lower_order_compare_400.gif", legend1='Simulation', legend2='Exact')
 
 #-----Animate residuals over 800 grid points-----#
 # residuals_animation("higher_order_1d/testsodshock800.npz", 'exactsodshock1d/exactsodshock800.npz', legend1='Simulation', legend2='Exact')
+# residuals_animation("lower_order_1d/sodshock800.npz", 'exactsodshock1d/exactsodshock800.npz', savename= "Animations/lower_order_compare_800.gif", legend1='Simulation', legend2='Exact')
 
 #-----Plot avg residuals over x-----#
 #Plot lower_order
@@ -82,6 +85,6 @@ def plot_both():
     fig.suptitle("             X-Averaged Absolute Residuals of the Sod Shock Simulation")
 
     plt.tight_layout()
-    plt.savefig("Figures/avgresids_both.eps", format='eps')
+    plt.savefig("Figures/avgresids_both.png", format='png')
     plt.show()
-plot_both()
+# plot_both()

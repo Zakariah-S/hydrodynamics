@@ -23,15 +23,16 @@ def sod_shock(x_start, x_end, y_start, y_end, t_final, nx, ny, nt, savename = No
         save_data(savename, U, x, y, t)
 
 if __name__ == '__main__':
-    sod_shock(x_start=0.,
-            x_end = 1.,
-            y_start=0.,
-            y_end = 1.,
-            t_final = 0.4,    #time we record until (starting time is 0 s)
-            nx = 50,         #number of positions along x that we track
-            ny = 50,         #number of positions along y that we track
-            nt = 40,          #number of time steps we take over the interval t_final - 0s
-            savename='testsodshock50x50')   #name of file we save data to (will have an .npz appended to it)
-    # pass
+    # sod_shock(x_start=0.,
+    #         x_end = 1.,
+    #         y_start=0.,
+    #         y_end = 1.,
+    #         t_final = 0.4,    #time we record until (starting time is 0 s)
+    #         nx = 50,         #number of positions along x that we track
+    #         ny = 50,         #number of positions along y that we track
+    #         nt = 40,          #number of time steps we take over the interval t_final - 0s
+    #         savename='testsodshock50x50')   #name of file we save data to (will have an .npz appended to it)
+    pass
 
-    animate_from_file("testsodshock10x10.npz")
+    # animate_from_file("testsodshock10x10.npz")
+    
